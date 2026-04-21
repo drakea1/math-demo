@@ -3,111 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MathQuest | Final Fix</title>
+    <title>MathQuest | Cloud Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
     <style>
-        :root { --primary: #40E0D0; --text: #2d3748; }
-        body { font-family: sans-serif; margin: 0; text-align: center; background: #f4f7f6; }
+        :root { --primary: #40E0D0; --primary-dark: #33b5a8; --bg: #f8fafc; --text: #1e293b; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.2s ease; }
+        body { background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Auth Screen */
+        #auth-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); display: flex; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(5px); }
+        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+
+        nav { background: white; height: 75px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-link { padding: 10px 15px; font-weight: 700; cursor: pointer; color: #64748b; text-transform: uppercase; font-size: 0.8rem; border-bottom: 3px solid transparent; }
+        .nav-link.active { color: var(--primary-dark); border-bottom-color: var(--primary); }
+
+        .container { max-width: 900px; margin: 40px auto; width: 95%; }
+        .stats-bar { background: white; padding: 20px; border-radius: 20px; display: flex; justify-content: space-around; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .quiz-card { background: white; padding: 50px; border-radius: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); position: relative; }
         
-        /* The thing that is likely blocking you */
-        #auth-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
-            display: flex; align-items: center; justify-content: center; z-index: 10000; 
-        }
+        .math-box { font-size: 3.5rem; margin: 40px 0; min-height: 140px; display: flex; align-items: center; justify-content: center; }
+        .ans-field { width: 100%; max-width: 300px; padding: 15px; font-size: 2rem; border: 3px solid #e2e8f0; border-radius: 15px; text-align: center; outline: none; }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 18px 40px; border-radius: 15px; font-weight: 800; cursor: pointer; width: 100%; max-width: 300px; margin-top: 25px; font-size: 1.2rem; }
         
-        .card { background: white; padding: 40px; border-radius: 20px; width: 300px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .btn { background: var(--primary); color: white; padding: 15px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; }
-        
-        nav { background: white; padding: 20px; display: flex; justify-content: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
-        .math-area { margin: 50px auto; padding: 40px; background: white; max-width: 500px; border-radius: 20px; }
-        #equation { font-size: 3rem; margin-bottom: 20px; }
+        #notif { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); padding: 15px 40px; border-radius: 40px; color: white; font-weight: bold; opacity: 0; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
-    <div class="card">
-        <h2>MathQuest</h2>
-        <input type="email" id="email" class="input" placeholder="Email">
-        <input type="password" id="pass" class="input" placeholder="Password">
-        <button class="btn" onclick="handleLogin()">Login / Sign Up</button>
-        <button class="btn" style="background: #999;" onclick="useGuest()">Play as Guest</button>
+    <div class="auth-card">
+        <h1 style="color:var(--primary-dark); margin-bottom:5px;">MathQuest</h1>
+        <p style="color:#64748b; margin-bottom:20px;">Sign in to save your level.</p>
+        <input type="email" id="email" class="auth-input" placeholder="Email">
+        <input type="password" id="pass" class="auth-input" placeholder="Password">
+        <button class="btn-submit" onclick="Session.handleAuth()" style="margin-top:10px;">Login / Sign Up</button>
+        <button onclick="Session.guest()" style="background:none; border:none; color:#94a3b8; margin-top:20px; cursor:pointer; text-decoration:underline;">Continue as Guest</button>
     </div>
 </div>
 
 <nav>
-    <button onclick="startQuiz('Algebra')">Algebra</button>
-    <button onclick="startQuiz('Arithmetic')">Arithmetic</button>
+    <div style="display:flex;">
+        <div class="nav-link active" onclick="Router.go('Algebra 1', this)">Algebra 1</div>
+        <div class="nav-link" onclick="Router.go('Algebra 2', this)">Algebra 2</div>
+        <div class="nav-link" onclick="Router.go('Quant', this)">Quant</div>
+    </div>
+    <div id="user-display" style="font-size:0.8rem; color:#94a3b8;">Guest Mode</div>
 </nav>
 
-<div class="math-area">
-    <h2 id="title">Select a Subject</h2>
-    <div id="equation">?</div>
-    <input type="number" id="ans" style="font-size: 2rem; width: 100px; text-align: center;">
-    <button class="btn" onclick="checkAns()">Check</button>
-    <p>Level: <span id="lvl">1</span> | XP: <span id="xp">0</span></p>
+<div class="container">
+    <div class="stats-bar">
+        <div><b>LEVEL</b> <span id="ui-lvl">1</span></div>
+        <div><b>XP</b> <span id="ui-xp">0</span> / 100</div>
+        <div><b>STREAK</b> 🔥 <span id="ui-streak">0</span></div>
+    </div>
+
+    <div class="quiz-card">
+        <h2 id="q-title" style="color:var(--primary-dark); text-transform:uppercase; margin-top:0;">Algebra 1</h2>
+        <div id="math-display" class="math-box"></div>
+        <input type="text" id="math-input" class="ans-field" placeholder="?">
+        <br>
+        <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
+    </div>
 </div>
 
-<script>
-    // 1. Force the Guest button to work no matter what
-    function useGuest() {
-        console.log("Guest Mode Engaged");
-        document.getElementById('auth-overlay').classList.add('hidden');
-    }
+<div id="notif">CORRECT</div>
 
-    // 2. Supabase Setup (Wrapped so it doesn't crash the site)
+<script>
     const SB_URL = 'https://kcuyxqzhmoofbnragrze.supabase.co'; 
     const SB_KEY = 'sb_publishable_Ywi55GRSB5kS6cAfqLHoHQ_xCwZOuOS';
+    
+    // Safety check: Don't let Supabase library hang the whole page
     let supabase = null;
     try {
         if(window.supabase) supabase = window.supabase.createClient(SB_URL, SB_KEY);
     } catch(e) { console.error("Database connection failed"); }
 
-    let state = { xp: 0, lvl: 1 };
-    let currentAns = 0;
+    let state = { xp: 0, lvl: 1, streak: 0 };
+    let curAns = 0;
+    let currentSub = "Algebra 1";
 
-    async function handleLogin() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('pass').value;
-        if(!supabase) return useGuest();
-        
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-        if (error) {
-            const { data: d2, error: e2 } = await supabase.auth.signUp({ email, password: pass });
-            if (e2) return alert(e2.message);
+    const Session = {
+        user: null,
+        guest() {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            Engine.gen();
+        },
+        async handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            if(!email || !password) return alert("Enter credentials");
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                const { data: up, error: upErr } = await supabase.auth.signUp({ email, password });
+                if (upErr) return alert(upErr.message);
+                this.user = up.user;
+            } else {
+                this.user = data.user;
+            }
+            
+            await this.loadData();
+            document.getElementById('user-display').innerText = email;
+            this.guest();
+        },
+        async loadData() {
+            if(!this.user) return;
+            const { data } = await supabase.from('profiles').select('state').eq('id', this.user.id).single();
+            if(data && data.state) {
+                state = data.state;
+                this.updateUI();
+            }
+        },
+        async saveData() {
+            if(!this.user) return;
+            await supabase.from('profiles').upsert({ id: this.user.id, state: state });
+        },
+        updateUI() {
+            document.getElementById('ui-lvl').innerText = state.lvl;
+            document.getElementById('ui-xp').innerText = state.xp;
+            document.getElementById('ui-streak').innerText = state.streak;
         }
-        useGuest();
-    }
+    };
 
-    function startQuiz(type) {
-        document.getElementById('title').innerText = type;
-        gen();
-    }
-
-    function gen() {
-        let a = Math.floor(Math.random() * 10) + 1;
-        let b = Math.floor(Math.random() * 10) + 1;
-        currentAns = a + b;
-        document.getElementById('equation').innerText = `${a} + ${b}`;
-        document.getElementById('ans').value = "";
-    }
-
-    function checkAns() {
-        const user = parseInt(document.getElementById('ans').value);
-        if(user === currentAns) {
-            state.xp += 20;
-            if(state.xp >= 100) { state.lvl++; state.xp = 0; }
-            alert("Correct!");
-        } else {
-            alert("Wrong!");
+    const Router = {
+        go(sub, el) {
+            currentSub = sub;
+            document.getElementById('q-title').innerText = sub;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+            Engine.gen();
         }
-        document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('xp').innerText = state.xp;
-        gen();
-    }
+    };
+
+    const Engine = {
+        gen() {
+            const r = (m, min=1) => Math.floor(Math.random() * m) + min;
+            let q = "";
+            
+            if (currentSub === "Algebra 2") {
+                let x = r(12); curAns = x*x; q = `\\sqrt{x} = ${x}`;
+            } else if (currentSub === "Quant") {
+                let p = r(9)*10; let v = r(20)*10; curAns = (p*v)/100; q = `${p}\\% \\text{ of } ${v}`;
+            } else {
+                let x = r(10); let a = r(5, 2); let b = r(10); curAns = x; q = `${a}x + ${b} = ${a*x+b}`;
+            }
+
+            const box = document.getElementById('math-display');
+            if (window.katex) {
+                katex.render(q, box);
+            } else {
+                box.innerText = q;
+            }
+            document.getElementById('math-input').value = "";
+            document.getElementById('math-input').focus();
+        },
+        check() {
+            const val = parseFloat(document.getElementById('math-input').value);
+            const n = document.getElementById('notif');
+            
+            if(val === curAns) {
+                state.xp += 25; state.streak++;
+                if(state.xp >= 100) { state.lvl++; state.xp = 0; }
+                n.innerText = "CORRECT!"; n.style.background = "#10b981";
+            } else {
+                state.streak = 0;
+                n.innerText = `WRONG: ${curAns}`; n.style.background = "#ef4444";
+            }
+            
+            n.style.opacity = 1;
+            Session.updateUI();
+            Session.saveData();
+            setTimeout(() => { n.style.opacity = 0; this.gen(); }, 800);
+        }
+    };
+
+    document.getElementById('math-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') Engine.check(); });
 </script>
-
 </body>
 </html>
