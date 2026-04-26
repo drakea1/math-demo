@@ -16,51 +16,56 @@
         :root { --primary: #40E0D0; --primary-dark: #33b5a8; --bg: #ffffff; --text: #2d3748; --text-light: #718096; --red: #ef4444; --green: #10b981; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: all 0.15s ease; }
         body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        
+        /* Navigation - Mobile Friendly */
         nav { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 1000; height: 75px; }
-        .nav-links { display: flex; height: 100%; }
-        .nav-link { display: flex; align-items: center; padding: 0 15px; cursor: pointer; font-weight: 700; color: var(--text-light); border-bottom: 4px solid transparent; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.8px; }
+        .nav-links { display: flex; height: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .nav-link { display: flex; align-items: center; padding: 0 15px; cursor: pointer; font-weight: 700; color: var(--text-light); border-bottom: 4px solid transparent; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.8px; flex-shrink: 0; }
         .nav-link.active { color: var(--primary-dark); border-bottom-color: var(--primary); background: rgba(64, 224, 208, 0.08); }
-        .auth-trigger { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; font-size: 0.75rem; }
+        
+        .auth-trigger { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; font-size: 0.75rem; white-space: nowrap; }
+        
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         .stats-bar { background: #f8fafc; padding: 20px 25px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
         .stats-top { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 0.9rem; }
         .xp-rail { width: 100%; height: 14px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
         .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
+        
         .view-card { background: white; padding: 45px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; }
         .hidden { display: none !important; }
         
         #view-About { text-align: center; }
-        .about-image { 
-            width: 100%; 
-            max-width: 450px; 
-            height: auto; 
-            aspect-ratio: 1 / 1;
-            object-fit: cover; 
-            border-radius: 20px; 
-            margin: 0 auto 30px auto; 
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            display: block;
-        }
-        .about-content { 
-            max-width: 700px; 
-            margin: 0 auto; 
-            line-height: 1.8; 
-            font-size: 1.15rem; 
-            text-align: left;
-        }
+        .about-image { width: 100%; max-width: 450px; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; margin: 0 auto 30px auto; border: 1px solid #e2e8f0; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: block; }
+        .about-content { max-width: 700px; margin: 0 auto; line-height: 1.8; font-size: 1.15rem; text-align: left; }
 
-        #cheat-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; border-radius: 24px; opacity: 0; pointer-events: none; border: 5px solid var(--red); text-align: center; }
+        #cheat-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; border-radius: 24px; opacity: 0; pointer-events: none; border: 5px solid var(--red); text-align: center; padding: 20px; }
         #cheat-overlay.active { opacity: 1; pointer-events: auto; }
+        
         .unit-badge { font-size: 0.65rem; font-weight: 900; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; background: rgba(64, 224, 208, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 15px; display: inline-block; }
-        .math-box { font-size: 2.5rem; margin: 20px 0; text-align: center; min-height: 140px; color: #1a202c; display: flex; align-items: center; justify-content: center; }
+        .math-box { font-size: 2.5rem; margin: 20px 0; text-align: center; min-height: 140px; color: #1a202c; display: flex; align-items: center; justify-content: center; overflow-x: auto; }
         .ans-field { width: 100%; max-width: 350px; padding: 18px; font-size: 2rem; border: 3px solid #edf2f7; border-radius: 16px; text-align: center; outline: none; display: block; margin: 0 auto; }
         .btn-submit { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 16px; font-weight: 800; cursor: pointer; margin-top: 25px; width: 100%; max-width: 350px; font-size: 1.2rem; }
-        #notif { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); padding: 12px 40px; border-radius: 40px; color: white; font-weight: 900; opacity: 0; z-index: 6000; pointer-events: none; }
+        
+        #notif { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); padding: 12px 40px; border-radius: 40px; color: white; font-weight: 900; opacity: 0; z-index: 6000; pointer-events: none; width: max-content; }
         .pop { opacity: 1 !important; transform: translateX(-50%) translateY(-15px) !important; }
+        
         #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 7000; backdrop-filter: blur(3px); }
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 380px; text-align: center; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
+
+        /* --- MOBILE ADAPTATION --- */
+        @media (max-width: 768px) {
+            nav { padding: 0 15px; height: auto; flex-direction: column; gap: 10px; padding-top: 10px; }
+            .nav-links { width: 100%; border-top: 1px solid #eee; }
+            .nav-link { padding: 15px 10px; font-size: 0.6rem; }
+            .auth-trigger { width: 100%; margin-bottom: 10px; }
+            .container { margin: 15px auto; padding: 0 15px; }
+            .view-card { padding: 25px 15px; }
+            .math-box { font-size: 1.6rem; min-height: 100px; }
+            .ans-field { font-size: 1.5rem; padding: 12px; }
+            #home-stats { grid-template-columns: 1fr !important; }
+            .auth-card { width: 90%; padding: 25px; }
+        }
     </style>
 </head>
 <body>
@@ -76,6 +81,7 @@
 </div>
 
 <nav>
+    <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
     <div class="nav-links">
         <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
         <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
@@ -84,7 +90,6 @@
         <div class="nav-link" data-tab="College Algebra" onclick="Router.go('College Algebra')">College Alg</div>
         <div class="nav-link" data-tab="Quantitative Reasoning" onclick="Router.go('Quantitative Reasoning')">Quant</div>
     </div>
-    <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
 </nav>
 
 <div class="container">
@@ -104,20 +109,11 @@
 
     <section id="view-About" class="view-card hidden">
         <img src="mompic.jpg" alt="Khulood Alhasan" class="about-image">
-        
         <div class="about-content">
             <h1 style="color:var(--primary-dark); margin-bottom: 20px; text-align: center;">Khulood Alhasan</h1>
-            
-            <p>
-                Hello! My name is <b>Khulood Alhasan</b>. I have been a teacher for 24 years—spending 14 years teaching in the Middle East and the last 10 years here in the United States. 
-            </p>
-            <p>
-                Throughout my career, the most important thing to me has always been my students. I truly care about each of you, and I care deeply about teaching you math in a way that actually makes sense.
-            </p>
-            <p>
-                I created this platform to give you a place to practice and grow your confidence. I am here to support you and help you get exactly where you need to be.
-            </p>
-
+            <p>Hello! My name is <b>Khulood Alhasan</b>. I have been a teacher for 24 years—spending 14 years teaching in the Middle East and the last 10 years here in the United States.</p>
+            <p>Throughout my career, the most important thing to me has always been my students. I truly care about each of you, and I care deeply about teaching you math in a way that actually makes sense.</p>
+            <p>I created this platform to give you a place to practice and grow your confidence. I am here to support you and help you get exactly where you need to be.</p>
             <p style="color:var(--text-light); font-style: italic; margin-top:40px; text-align: center; border-top: 1px solid #f0f0f0; padding-top: 20px;">
                 "Teaching math is what I do, but helping my students succeed is why I do it."
             </p>
@@ -126,17 +122,17 @@
 
     <section id="view-Quiz" class="view-card hidden" style="text-align:center;">
         <div id="cheat-overlay">
-            <h1 style="color:var(--red); font-size: 2.5rem;">ANTI-AI SHIELD</h1>
+            <h1 style="color:var(--red); font-size: 1.5rem;">ANTI-AI SHIELD</h1>
             <p style="font-weight: bold;">Tab-switching detected. Problem scrambled.</p>
             <button class="auth-trigger" onclick="Engine.clearScramble()">RESUME</button>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="quiz-title" style="margin:0; font-size:1.1rem; color:var(--primary-dark);">SUBJECT</h2>
-            <div style="font-weight:900;">Mastery: <span id="ui-ss">0</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+            <h2 id="quiz-title" style="margin:0; font-size:0.9rem; color:var(--primary-dark);">SUBJECT</h2>
+            <div style="font-weight:900; font-size: 0.8rem;">Mastery: <span id="ui-ss">0</span></div>
         </div>
         <div id="unit-badge" class="unit-badge">UNIT</div>
         <div id="math-display" class="math-box"></div>
-        <input type="text" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off">
+        <input type="text" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="decimal">
         <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
     </section>
 </div>
