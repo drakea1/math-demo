@@ -17,9 +17,9 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: all 0.15s ease; }
         body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
         
-        /* Navigation - Mobile Friendly */
         nav { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 1000; height: 75px; }
-        .nav-links { display: flex; height: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .nav-links { display: flex; height: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .nav-links::-webkit-scrollbar { display: none; }
         .nav-link { display: flex; align-items: center; padding: 0 15px; cursor: pointer; font-weight: 700; color: var(--text-light); border-bottom: 4px solid transparent; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.8px; flex-shrink: 0; }
         .nav-link.active { color: var(--primary-dark); border-bottom-color: var(--primary); background: rgba(64, 224, 208, 0.08); }
         
@@ -31,7 +31,8 @@
         .xp-rail { width: 100%; height: 14px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
         .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
         
-        .view-card { background: white; padding: 45px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; }
+        /* FIX: View card dynamic sizing */
+        .view-card { background: white; padding: 40px 25px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; width: 100%; min-height: fit-content; }
         .hidden { display: none !important; }
         
         #view-About { text-align: center; }
@@ -42,7 +43,10 @@
         #cheat-overlay.active { opacity: 1; pointer-events: auto; }
         
         .unit-badge { font-size: 0.65rem; font-weight: 900; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; background: rgba(64, 224, 208, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 15px; display: inline-block; }
-        .math-box { font-size: 2.5rem; margin: 20px 0; text-align: center; min-height: 140px; color: #1a202c; display: flex; align-items: center; justify-content: center; overflow-x: auto; }
+        
+        /* FIX: Math Box scrolling and visibility */
+        .math-box { font-size: 2.2rem; margin: 20px 0; text-align: center; min-height: 120px; color: #1a202c; display: flex; align-items: center; justify-content: center; overflow-x: auto; overflow-y: hidden; width: 100%; white-space: nowrap; padding: 10px 0; }
+        
         .ans-field { width: 100%; max-width: 350px; padding: 18px; font-size: 2rem; border: 3px solid #edf2f7; border-radius: 16px; text-align: center; outline: none; display: block; margin: 0 auto; }
         .btn-submit { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 16px; font-weight: 800; cursor: pointer; margin-top: 25px; width: 100%; max-width: 350px; font-size: 1.2rem; }
         
@@ -53,15 +57,14 @@
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 380px; text-align: center; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
 
-        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
             nav { padding: 0 15px; height: auto; flex-direction: column; gap: 10px; padding-top: 10px; }
-            .nav-links { width: 100%; border-top: 1px solid #eee; }
+            .nav-links { width: 100%; border-top: 1px solid #eee; justify-content: flex-start; }
             .nav-link { padding: 15px 10px; font-size: 0.6rem; }
             .auth-trigger { width: 100%; margin-bottom: 10px; }
             .container { margin: 15px auto; padding: 0 15px; }
-            .view-card { padding: 25px 15px; }
-            .math-box { font-size: 1.6rem; min-height: 100px; }
+            .view-card { padding: 30px 15px; }
+            .math-box { font-size: 1.5rem; min-height: 80px; }
             .ans-field { font-size: 1.5rem; padding: 12px; }
             #home-stats { grid-template-columns: 1fr !important; }
             .auth-card { width: 90%; padding: 25px; }
@@ -132,7 +135,7 @@
         </div>
         <div id="unit-badge" class="unit-badge">UNIT</div>
         <div id="math-display" class="math-box"></div>
-        <input type="text" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="decimal">
+        <input type="number" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="numeric">
         <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
     </section>
 </div>
@@ -154,7 +157,7 @@
         login: function() {
             const e = document.getElementById('email').value; if(!e) return;
             this.isLive = true; this.user = e;
-            const saved = localStorage.getItem(`mq_hard_v2_${e}`); if(saved) state = JSON.parse(saved);
+            const saved = localStorage.getItem(`mq_hard_v4_${e}`); if(saved) state = JSON.parse(saved);
             document.getElementById('auth-btn').innerText = e.split('@')[0].toUpperCase();
             this.sync(); document.getElementById('auth-overlay').classList.add('hidden');
         },
@@ -168,7 +171,7 @@
             document.getElementById('ui-xp').style.width = (state.xp / req * 100) + "%";
             const h = document.getElementById('home-stats'); h.innerHTML = "";
             for(let m in state.mastery) h.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0"><b>${m}</b><br><span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span></div>`;
-            if(this.isLive) localStorage.setItem(`mq_hard_v2_${this.user}`, JSON.stringify(state));
+            if(this.isLive) localStorage.setItem(`mq_hard_v4_${this.user}`, JSON.stringify(state));
         }
     };
 
@@ -198,7 +201,8 @@
                 if(type === 1) {
                     unit = "Solving for X";
                     let x = r(15); this.rawAns = x;
-                    q = `${r(5,2)}x + ${r(12)} = ${x * r(5,2) + r(12)}`;
+                    let m = r(5,2); let b = r(12);
+                    q = `${m}x + ${b} = ${m * x + b}`;
                 } else {
                     unit = "Linear Slopes";
                     let m = r(6); let x = r(5); let b = r(10); this.rawAns = m * x + b;
@@ -208,35 +212,39 @@
             else if (this.sub === "Algebra 2") {
                 if(type === 1) {
                     unit = "Radical Equations";
-                    let innerX = r(10, 2); this.rawAns = innerX * innerX - r(5);
-                    q = `\\sqrt{x + ${r(5)}} = ${innerX}. \\text{ Solve for } x`;
+                    let result = r(10, 3); this.rawAns = (result * result) - 5;
+                    q = `\\sqrt{x + 5} = ${result}. \\text{ Solve } x`;
                 } else {
                     unit = "Quadratic Factors";
-                    let x1 = r(6); let x2 = r(4); this.rawAns = x1;
+                    let x1 = r(10); let x2 = r(5); this.rawAns = Math.max(x1, x2);
                     q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Largest root?}`;
                 }
             }
             else if (this.sub === "College Algebra") {
                 if(type === 1) {
                     unit = "Discriminant Analysis";
-                    let b = r(8, 4); let a = r(2); let c = r(3); this.rawAns = b*b - 4*a*c;
-                    q = `\\text{Find the discriminant: } ${a}x^2 + ${b}x + ${c} = 0`;
+                    let b = r(10, 6); let a = 1; let c = r(5); this.rawAns = b*b - 4*a*c;
+                    q = `x^2 + ${b}x + ${c} = 0. \\text{ Find the discriminant}`;
                 } else {
                     unit = "Hard Composites";
-                    let a = r(3, 2); let b = r(4); this.rawAns = Math.pow(a*2 + b, 2);
-                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(2))`;
+                    let a = r(3, 2); let b = r(4); let input = r(3); this.rawAns = Math.pow(a*input + b, 2);
+                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(${input}))`;
                 }
             }
             else if (this.sub === "Quantitative Reasoning") {
                 if(type === 1) {
-                    unit = "Weighted Averages";
-                    let w1 = 0.4; let g1 = r(100, 70); let w2 = 0.6; let g2 = r(100, 70); 
-                    this.rawAns = (g1 * w1 + g2 * w2).toFixed(1);
-                    q = `\\text{Final Grade: Quiz(40\\%)=}${g1}, \\text{ Exam(60\\%)=}${g2}. \\text{Total?}`;
+                    unit = "Percents & Prices";
+                    let base = r(10, 2) * 10;
+                    let perc = r(5, 1) * 10;
+                    this.rawAns = base - (base * (perc/100));
+                    q = `\\text{Item: } \\$${base}. \\text{ Discount: } ${perc}\\%. \\text{ New price?}`;
                 } else {
-                    unit = "Compound Interest";
-                    let p = r(10)*100; let rate = 0.05; this.rawAns = (p * Math.pow(1 + rate, 2)).toFixed(2);
-                    q = `\\text{Compound } \\$${p} \\text{ at } 5\\% \\text{ for 2 years (annually). Total value?}`;
+                    unit = "Simple Interest";
+                    let p = r(20, 5) * 100;
+                    let t = r(4, 2);
+                    let i = p * 0.05 * t;
+                    this.rawAns = p + i;
+                    q = `\\$${p} \\text{ at } 5\\% \\text{ interest for } ${t} \\text{ years. Total?}`;
                 }
             }
 
@@ -248,7 +256,7 @@
         check: function() {
             const val = document.getElementById('math-input').value.trim();
             const n = document.getElementById('notif');
-            if(Math.abs(parseFloat(val) - parseFloat(this.rawAns)) < 0.15) {
+            if(parseInt(val) === parseInt(this.rawAns)) {
                 state.xp += 25; state.streak++; state.mastery[this.sub] += 20;
                 n.innerText = "CORRECT"; n.style.background = "var(--green)";
                 if(state.xp >= getReq(state.lvl)) { state.xp -= getReq(state.lvl); state.lvl++; }
