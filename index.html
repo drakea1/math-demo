@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khulood Alhasan | MathHub</title>
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <meta property="og:title" content="Khulood Alhasan | MathHub">
+    <meta property="og:description" content="24 years of experience teaching math.">
+    <meta property="og:image" content="logo.jpg">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+    <style>
+        :root { --primary: #40E0D0; --primary-dark: #33b5a8; --bg: #ffffff; --text: #2d3748; --text-light: #718096; --red: #ef4444; --green: #10b981; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: all 0.15s ease; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        nav { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 1000; height: 75px; }
+        .nav-links { display: flex; height: 100%; }
+        .nav-link { display: flex; align-items: center; padding: 0 15px; cursor: pointer; font-weight: 700; color: var(--text-light); border-bottom: 4px solid transparent; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.8px; }
+        .nav-link.active { color: var(--primary-dark); border-bottom-color: var(--primary); background: rgba(64, 224, 208, 0.08); }
+        .auth-trigger { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; font-size: 0.75rem; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .stats-bar { background: #f8fafc; padding: 20px 25px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .stats-top { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 0.9rem; }
+        .xp-rail { width: 100%; height: 14px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+        .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
+        .view-card { background: white; padding: 45px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; }
+        .hidden { display: none !important; }
+        
+        #view-About { text-align: center; }
+        .about-image { 
+            width: 100%; 
+            max-width: 450px; 
+            height: auto; 
+            aspect-ratio: 1 / 1;
+            object-fit: cover; 
+            border-radius: 20px; 
+            margin: 0 auto 30px auto; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: block;
+        }
+        .about-content { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            line-height: 1.8; 
+            font-size: 1.15rem; 
+            text-align: left;
+        }
+
+        #cheat-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; border-radius: 24px; opacity: 0; pointer-events: none; border: 5px solid var(--red); text-align: center; }
+        #cheat-overlay.active { opacity: 1; pointer-events: auto; }
+        .unit-badge { font-size: 0.65rem; font-weight: 900; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; background: rgba(64, 224, 208, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 15px; display: inline-block; }
+        .math-box { font-size: 2.5rem; margin: 20px 0; text-align: center; min-height: 140px; color: #1a202c; display: flex; align-items: center; justify-content: center; }
+        .ans-field { width: 100%; max-width: 350px; padding: 18px; font-size: 2rem; border: 3px solid #edf2f7; border-radius: 16px; text-align: center; outline: none; display: block; margin: 0 auto; }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 16px; font-weight: 800; cursor: pointer; margin-top: 25px; width: 100%; max-width: 350px; font-size: 1.2rem; }
+        #notif { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); padding: 12px 40px; border-radius: 40px; color: white; font-weight: 900; opacity: 0; z-index: 6000; pointer-events: none; }
+        .pop { opacity: 1 !important; transform: translateX(-50%) translateY(-15px) !important; }
+        #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 7000; backdrop-filter: blur(3px); }
+        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 380px; text-align: center; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-overlay">
+    <div class="auth-card">
+        <h2 style="color:var(--primary-dark)">Secure Access</h2>
+        <input type="email" id="email" class="auth-input" placeholder="Email Address">
+        <input type="password" id="pass" class="auth-input" placeholder="Password">
+        <button class="auth-trigger" style="width:100%;" onclick="Session.login()">Login / Sign Up</button>
+        <p onclick="Session.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
+    </div>
+</div>
+
+<nav>
+    <div class="nav-links">
+        <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
+        <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
+        <div class="nav-link" data-tab="Algebra 1" onclick="Router.go('Algebra 1')">Algebra 1</div>
+        <div class="nav-link" data-tab="Algebra 2" onclick="Router.go('Algebra 2')">Algebra 2</div>
+        <div class="nav-link" data-tab="College Algebra" onclick="Router.go('College Algebra')">College Alg</div>
+        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="Router.go('Quantitative Reasoning')">Quant</div>
+    </div>
+    <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
+</nav>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stats-top">
+            <div style="color:var(--primary-dark)">LEVEL <span id="ui-lvl">1</span></div>
+            <div style="font-size:0.8rem; color:var(--text-light)"><span id="ui-cur-xp">0</span> / <span id="ui-req-xp">100</span> XP</div>
+            <div>🔥 <span id="ui-streak">0</span></div>
+        </div>
+        <div class="xp-rail"><div class="xp-bar" id="ui-xp"></div></div>
+    </div>
+
+    <section id="view-Home" class="view-card">
+        <h1>Mastery Overview</h1>
+        <div id="home-stats" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 15px;"></div>
+    </section>
+
+    <section id="view-About" class="view-card hidden">
+        <img src="mompic.jpg" alt="Khulood Alhasan" class="about-image">
+        
+        <div class="about-content">
+            <h1 style="color:var(--primary-dark); margin-bottom: 20px; text-align: center;">Khulood Alhasan</h1>
+            
+            <p>
+                Hello! My name is <b>Khulood Alhasan</b>. I have been a teacher for 24 years—spending 14 years teaching in the Middle East and the last 10 years here in the United States. 
+            </p>
+            <p>
+                Throughout my career, the most important thing to me has always been my students. I truly care about each of you, and I care deeply about teaching you math in a way that actually makes sense.
+            </p>
+            <p>
+                I created this platform to give you a place to practice and grow your confidence. I am here to support you and help you get exactly where you need to be.
+            </p>
+
+            <p style="color:var(--text-light); font-style: italic; margin-top:40px; text-align: center; border-top: 1px solid #f0f0f0; padding-top: 20px;">
+                "Teaching math is what I do, but helping my students succeed is why I do it."
+            </p>
+        </div>
+    </section>
+
+    <section id="view-Quiz" class="view-card hidden" style="text-align:center;">
+        <div id="cheat-overlay">
+            <h1 style="color:var(--red); font-size: 2.5rem;">ANTI-AI SHIELD</h1>
+            <p style="font-weight: bold;">Tab-switching detected. Problem scrambled.</p>
+            <button class="auth-trigger" onclick="Engine.clearScramble()">RESUME</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="quiz-title" style="margin:0; font-size:1.1rem; color:var(--primary-dark);">SUBJECT</h2>
+            <div style="font-weight:900;">Mastery: <span id="ui-ss">0</span></div>
+        </div>
+        <div id="unit-badge" class="unit-badge">UNIT</div>
+        <div id="math-display" class="math-box"></div>
+        <input type="text" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off">
+        <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
+    </section>
+</div>
+
+<div id="notif">CORRECT</div>
+
+<script>
+    let state = { xp: 0, lvl: 1, streak: 0, mastery: { "Algebra 1": 0, "Algebra 2": 0, "College Algebra": 0, "Quantitative Reasoning": 0 } };
+    const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden" && !document.getElementById('view-Quiz').classList.contains('hidden')) {
+            document.getElementById('cheat-overlay').classList.add('active');
+        }
+    });
+
+    const Session = {
+        isLive: false, user: null,
+        login: function() {
+            const e = document.getElementById('email').value; if(!e) return;
+            this.isLive = true; this.user = e;
+            const saved = localStorage.getItem(`mq_hard_v2_${e}`); if(saved) state = JSON.parse(saved);
+            document.getElementById('auth-btn').innerText = e.split('@')[0].toUpperCase();
+            this.sync(); document.getElementById('auth-overlay').classList.add('hidden');
+        },
+        guest: function() { this.isLive = false; document.getElementById('auth-overlay').classList.add('hidden'); this.sync(); },
+        sync: function() {
+            const req = getReq(state.lvl);
+            document.getElementById('ui-lvl').innerText = state.lvl;
+            document.getElementById('ui-streak').innerText = state.streak;
+            document.getElementById('ui-cur-xp').innerText = Math.floor(state.xp);
+            document.getElementById('ui-req-xp').innerText = req;
+            document.getElementById('ui-xp').style.width = (state.xp / req * 100) + "%";
+            const h = document.getElementById('home-stats'); h.innerHTML = "";
+            for(let m in state.mastery) h.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0"><b>${m}</b><br><span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span></div>`;
+            if(this.isLive) localStorage.setItem(`mq_hard_v2_${this.user}`, JSON.stringify(state));
+        }
+    };
+
+    const Router = {
+        go: function(id) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === id));
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            if(id === 'Home') { Session.sync(); document.getElementById(`view-Home`).classList.remove('hidden'); }
+            else if (id === 'About') { document.getElementById(`view-About`).classList.remove('hidden'); }
+            else { document.getElementById('view-Quiz').classList.remove('hidden'); Engine.init(id); }
+        }
+    };
+
+    const Engine = {
+        sub: "", rawAns: "",
+        init: function(s) { this.sub = s; document.getElementById('quiz-title').innerText = s; this.gen(); },
+        clearScramble: function() {
+            document.getElementById('cheat-overlay').classList.remove('active');
+            this.gen();
+        },
+        gen: function() {
+            const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
+            let q = "", unit = "";
+            let type = r(2); 
+
+            if (this.sub === "Algebra 1") {
+                if(type === 1) {
+                    unit = "Solving for X";
+                    let x = r(15); this.rawAns = x;
+                    q = `${r(5,2)}x + ${r(12)} = ${x * r(5,2) + r(12)}`;
+                } else {
+                    unit = "Linear Slopes";
+                    let m = r(6); let x = r(5); let b = r(10); this.rawAns = m * x + b;
+                    q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`;
+                }
+            } 
+            else if (this.sub === "Algebra 2") {
+                if(type === 1) {
+                    unit = "Radical Equations";
+                    let innerX = r(10, 2); this.rawAns = innerX * innerX - r(5);
+                    q = `\\sqrt{x + ${r(5)}} = ${innerX}. \\text{ Solve for } x`;
+                } else {
+                    unit = "Quadratic Factors";
+                    let x1 = r(6); let x2 = r(4); this.rawAns = x1;
+                    q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Largest root?}`;
+                }
+            }
+            else if (this.sub === "College Algebra") {
+                if(type === 1) {
+                    unit = "Discriminant Analysis";
+                    let b = r(8, 4); let a = r(2); let c = r(3); this.rawAns = b*b - 4*a*c;
+                    q = `\\text{Find the discriminant: } ${a}x^2 + ${b}x + ${c} = 0`;
+                } else {
+                    unit = "Hard Composites";
+                    let a = r(3, 2); let b = r(4); this.rawAns = Math.pow(a*2 + b, 2);
+                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(2))`;
+                }
+            }
+            else if (this.sub === "Quantitative Reasoning") {
+                if(type === 1) {
+                    unit = "Weighted Averages";
+                    let w1 = 0.4; let g1 = r(100, 70); let w2 = 0.6; let g2 = r(100, 70); 
+                    this.rawAns = (g1 * w1 + g2 * w2).toFixed(1);
+                    q = `\\text{Final Grade: Quiz(40\\%)=}${g1}, \\text{ Exam(60\\%)=}${g2}. \\text{Total?}`;
+                } else {
+                    unit = "Compound Interest";
+                    let p = r(10)*100; let rate = 0.05; this.rawAns = (p * Math.pow(1 + rate, 2)).toFixed(2);
+                    q = `\\text{Compound } \\$${p} \\text{ at } 5\\% \\text{ for 2 years (annually). Total value?}`;
+                }
+            }
+
+            document.getElementById('unit-badge').innerText = unit;
+            const box = document.getElementById('math-display');
+            if(window.katex) katex.render(q, box); else box.innerText = q;
+            document.getElementById('math-input').value = ""; document.getElementById('math-input').focus();
+        },
+        check: function() {
+            const val = document.getElementById('math-input').value.trim();
+            const n = document.getElementById('notif');
+            if(Math.abs(parseFloat(val) - parseFloat(this.rawAns)) < 0.15) {
+                state.xp += 25; state.streak++; state.mastery[this.sub] += 20;
+                n.innerText = "CORRECT"; n.style.background = "var(--green)";
+                if(state.xp >= getReq(state.lvl)) { state.xp -= getReq(state.lvl); state.lvl++; }
+            } else {
+                state.streak = 0; n.innerText = `WRONG: ${this.rawAns}`; n.style.background = "var(--red)";
+            }
+            n.classList.add('pop');
+            document.getElementById('ui-ss').innerText = state.mastery[this.sub];
+            setTimeout(() => { n.classList.remove('pop'); Session.sync(); this.gen(); }, 600);
+        }
+    };
+    document.getElementById('math-input').addEventListener('keypress', (e) => { if(e.key==='Enter') Engine.check(); });
+    Session.sync();
+</script>
+</body>
+</html>
