@@ -31,7 +31,6 @@
         .xp-rail { width: 100%; height: 14px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
         .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
         
-        /* FIX: View card dynamic sizing */
         .view-card { background: white; padding: 40px 25px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; width: 100%; min-height: fit-content; }
         .hidden { display: none !important; }
         
@@ -44,7 +43,6 @@
         
         .unit-badge { font-size: 0.65rem; font-weight: 900; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; background: rgba(64, 224, 208, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 15px; display: inline-block; }
         
-        /* FIX: Math Box scrolling and visibility */
         .math-box { font-size: 2.2rem; margin: 20px 0; text-align: center; min-height: 120px; color: #1a202c; display: flex; align-items: center; justify-content: center; overflow-x: auto; overflow-y: hidden; width: 100%; white-space: nowrap; padding: 10px 0; }
         
         .ans-field { width: 100%; max-width: 350px; padding: 18px; font-size: 2rem; border: 3px solid #edf2f7; border-radius: 16px; text-align: center; outline: none; display: block; margin: 0 auto; }
@@ -78,20 +76,20 @@
         <h2 style="color:var(--primary-dark)">Secure Access</h2>
         <input type="email" id="email" class="auth-input" placeholder="Email Address">
         <input type="password" id="pass" class="auth-input" placeholder="Password">
-        <button class="auth-trigger" style="width:100%;" onclick="Session.login()">Login / Sign Up</button>
-        <p onclick="Session.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
+        <button class="auth-trigger" style="width:100%;" onclick="AppHub.login()">Login / Sign Up</button>
+        <p onclick="AppHub.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
     </div>
 </div>
 
 <nav>
     <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
     <div class="nav-links">
-        <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
-        <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
-        <div class="nav-link" data-tab="Algebra 1" onclick="Router.go('Algebra 1')">Algebra 1</div>
-        <div class="nav-link" data-tab="Algebra 2" onclick="Router.go('Algebra 2')">Algebra 2</div>
-        <div class="nav-link" data-tab="College Algebra" onclick="Router.go('College Algebra')">College Alg</div>
-        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="Router.go('Quantitative Reasoning')">Quant</div>
+        <div class="nav-link active" data-tab="Home" onclick="AppHub.route('Home')">Home</div>
+        <div class="nav-link" data-tab="About" onclick="AppHub.route('About')">About Me</div>
+        <div class="nav-link" data-tab="Algebra 1" onclick="AppHub.route('Algebra 1')">Algebra 1</div>
+        <div class="nav-link" data-tab="Algebra 2" onclick="AppHub.route('Algebra 2')">Algebra 2</div>
+        <div class="nav-link" data-tab="College Algebra" onclick="AppHub.route('College Algebra')">College Alg</div>
+        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="AppHub.route('Quantitative Reasoning')">Quant</div>
     </div>
 </nav>
 
@@ -127,7 +125,7 @@
         <div id="cheat-overlay">
             <h1 style="color:var(--red); font-size: 1.5rem;">ANTI-AI SHIELD</h1>
             <p style="font-weight: bold;">Tab-switching detected. Problem scrambled.</p>
-            <button class="auth-trigger" onclick="Engine.clearScramble()">RESUME</button>
+            <button class="auth-trigger" onclick="AppHub.clearCheat()">RESUME</button>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h2 id="quiz-title" style="margin:0; font-size:0.9rem; color:var(--primary-dark);">SUBJECT</h2>
@@ -136,14 +134,14 @@
         <div id="unit-badge" class="unit-badge">UNIT</div>
         <div id="math-display" class="math-box"></div>
         <input type="number" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="numeric">
-        <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
+        <button class="btn-submit" onclick="AppHub.check()">VERIFY</button>
     </section>
 </div>
 
 <div id="notif">CORRECT</div>
 
 <script>
-   (() => {
+(() => {
     // === ENCAPSULATED SECURE STATE ===
     let state = {
         xp: 0,
@@ -157,7 +155,6 @@
 
     // Utilities
     const rand = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
-    const randSign = () => Math.random() > 0.5 ? 1 : -1;
     const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
 
     // === ANTI-CHEAT TAB TRACKER ===
@@ -205,8 +202,6 @@
 
         sync: function() {
             const req = getReqXp(state.lvl);
-            
-            // UI Element Fail-safes
             const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
             
             updateText('ui-lvl', state.lvl);
@@ -273,7 +268,7 @@
 
         gen: function() {
             let q = "", unit = "";
-            const type = rand(6); // Expanded randomly across 6 archetypes per topic
+            const type = rand(6);
 
             switch (this.sub) {
                 case "Algebra 1":
@@ -327,7 +322,7 @@
                         q = `\\log_{${base}}(${Math.pow(base, val)}) = x. \\text{ Find } x.`;
                     } else if (type === 5) {
                         unit = "Complex Imaginary Evaluation";
-                        let cycle = rand(4, 1); this.rawAns = [1, 0, -1, 0][cycle - 1]; // Evaluates structural forms of i^n Real parts
+                        let cycle = rand(4, 1); this.rawAns = [1, 0, -1, 0][cycle - 1];
                         q = `\\text{Find real element of } i^{${cycle * 2}}.`;
                     } else {
                         unit = "Vertex Properties";
@@ -428,9 +423,8 @@
 
             if (!notif) return;
 
-            // Tolerance matching for floating point safety
             if (!isNaN(parsedVal) && Math.abs(parsedVal - targetAns) < 0.01) {
-                state.xp += 30; // Boosted baseline experience payout
+                state.xp += 30;
                 state.streak++;
                 state.mastery[this.sub] += 25;
                 
@@ -454,7 +448,6 @@
             const subScore = document.getElementById('ui-ss');
             if (subScore) subScore.innerText = state.mastery[this.sub];
 
-            // Lock submission during transitions to prevent spam exploits
             inputEl.disabled = true;
 
             setTimeout(() => {
@@ -471,12 +464,13 @@
         if (e.key === 'Enter') Engine.check();
     });
 
-    // Expose APIs explicitly through a secure immutable global runtime route
+    // Immutable safe system binding points mapping functions to global elements
     window.AppHub = {
         login: () => Session.login(),
         guest: () => Session.guest(),
         route: (dest) => Router.go(dest),
-        clearCheat: () => Engine.clearScramble()
+        clearCheat: () => Engine.clearScramble(),
+        check: () => Engine.check()
     };
 
     // Initialization
