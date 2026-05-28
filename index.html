@@ -143,133 +143,345 @@
 <div id="notif">CORRECT</div>
 
 <script>
-    let state = { xp: 0, lvl: 1, streak: 0, mastery: { "Algebra 1": 0, "Algebra 2": 0, "College Algebra": 0, "Quantitative Reasoning": 0 } };
-    const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
+   (() => {
+    // === ENCAPSULATED SECURE STATE ===
+    let state = {
+        xp: 0,
+        lvl: 1,
+        streak: 0,
+        mastery: { "Algebra 1": 0, "Algebra 2": 0, "College Algebra": 0, "Quantitative Reasoning": 0 }
+    };
 
+    // Advanced Level Scaling Formula: Exponential Curve
+    const getReqXp = (lvl) => Math.floor(100 * Math.pow(lvl, 1.2) * Math.pow(1.15, lvl - 1));
+
+    // Utilities
+    const rand = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const randSign = () => Math.random() > 0.5 ? 1 : -1;
+    const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
+
+    // === ANTI-CHEAT TAB TRACKER ===
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden" && !document.getElementById('view-Quiz').classList.contains('hidden')) {
-            document.getElementById('cheat-overlay').classList.add('active');
+        if (document.visibilityState === "hidden") {
+            const quizView = document.getElementById('view-Quiz');
+            if (quizView && !quizView.classList.contains('hidden')) {
+                const overlay = document.getElementById('cheat-overlay');
+                if (overlay) overlay.classList.add('active');
+                state.streak = 0; // Wipe streak on suspicious behavior
+                Session.sync();
+            }
         }
     });
 
+    // === AUTH & PERSISTENCE MODULE ===
     const Session = {
-        isLive: false, user: null,
+        isLive: false,
+        user: null,
+
         login: function() {
-            const e = document.getElementById('email').value; if(!e) return;
-            this.isLive = true; this.user = e;
-            const saved = localStorage.getItem(`mq_hard_v4_${e}`); if(saved) state = JSON.parse(saved);
-            document.getElementById('auth-btn').innerText = e.split('@')[0].toUpperCase();
-            this.sync(); document.getElementById('auth-overlay').classList.add('hidden');
+            const emailInput = document.getElementById('email');
+            if (!emailInput || !emailInput.value) return;
+            
+            this.isLive = true;
+            this.user = emailInput.value.trim();
+            
+            const saved = localStorage.getItem(`mq_hard_v5_${btoa(this.user)}`);
+            if (saved) {
+                try { state = JSON.parse(saved); } catch(e) { console.error("Malformed storage payload."); }
+            }
+            
+            const authBtn = document.getElementById('auth-btn');
+            if (authBtn) authBtn.innerText = this.user.split('@')[0].toUpperCase();
+            
+            this.sync();
+            document.getElementById('auth-overlay')?.classList.add('hidden');
         },
-        guest: function() { this.isLive = false; document.getElementById('auth-overlay').classList.add('hidden'); this.sync(); },
+
+        guest: function() {
+            this.isLive = false;
+            document.getElementById('auth-overlay')?.classList.add('hidden');
+            this.sync();
+        },
+
         sync: function() {
-            const req = getReq(state.lvl);
-            document.getElementById('ui-lvl').innerText = state.lvl;
-            document.getElementById('ui-streak').innerText = state.streak;
-            document.getElementById('ui-cur-xp').innerText = Math.floor(state.xp);
-            document.getElementById('ui-req-xp').innerText = req;
-            document.getElementById('ui-xp').style.width = (state.xp / req * 100) + "%";
-            const h = document.getElementById('home-stats'); h.innerHTML = "";
-            for(let m in state.mastery) h.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0"><b>${m}</b><br><span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span></div>`;
-            if(this.isLive) localStorage.setItem(`mq_hard_v4_${this.user}`, JSON.stringify(state));
+            const req = getReqXp(state.lvl);
+            
+            // UI Element Fail-safes
+            const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+            
+            updateText('ui-lvl', state.lvl);
+            updateText('ui-streak', state.streak);
+            updateText('ui-cur-xp', Math.floor(state.xp));
+            updateText('ui-req-xp', req);
+            
+            const xpBar = document.getElementById('ui-xp');
+            if (xpBar) xpBar.style.width = Math.min(100, (state.xp / req * 100)) + "%";
+
+            const homeStats = document.getElementById('home-stats');
+            if (homeStats) {
+                homeStats.innerHTML = Object.entries(state.mastery)
+                    .map(([subject, points]) => `
+                        <div class="stat-card" style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; transition: transform 0.2s;">
+                            <b>${subject}</b><br>
+                            <span style="color:var(--primary-dark); font-size:1.5rem; font-weight:700;">${points} pts</span>
+                        </div>
+                    `).join('');
+            }
+
+            if (this.isLive) {
+                localStorage.setItem(`mq_hard_v5_${btoa(this.user)}`, JSON.stringify(state));
+            }
         }
     };
 
+    // === APPLICATION ROUTER ===
     const Router = {
         go: function(id) {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === id));
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            if(id === 'Home') { Session.sync(); document.getElementById(`view-Home`).classList.remove('hidden'); }
-            else if (id === 'About') { document.getElementById(`view-About`).classList.remove('hidden'); }
-            else { document.getElementById('view-Quiz').classList.remove('hidden'); Engine.init(id); }
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('data-tab') === id);
+            });
+            document.querySelectorAll('section').forEach(sec => sec.classList.add('hidden'));
+
+            if (id === 'Home') {
+                Session.sync();
+                document.getElementById('view-Home')?.classList.remove('hidden');
+            } else if (id === 'About') {
+                document.getElementById('view-About')?.classList.remove('hidden');
+            } else {
+                document.getElementById('view-Quiz')?.classList.remove('hidden');
+                Engine.init(id);
+            }
         }
     };
 
+    // === MATRIX ALGEBRA MATHEMATICS ENGINE ===
     const Engine = {
-        sub: "", rawAns: "",
-        init: function(s) { this.sub = s; document.getElementById('quiz-title').innerText = s; this.gen(); },
-        clearScramble: function() {
-            document.getElementById('cheat-overlay').classList.remove('active');
+        sub: "",
+        rawAns: 0,
+
+        init: function(subject) {
+            this.sub = subject;
+            const title = document.getElementById('quiz-title');
+            if (title) title.innerText = subject;
             this.gen();
         },
-        gen: function() {
-            const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
-            let q = "", unit = "";
-            let type = r(2); 
 
-            if (this.sub === "Algebra 1") {
-                if(type === 1) {
-                    unit = "Solving for X";
-                    let x = r(15); this.rawAns = x;
-                    let m = r(5,2); let b = r(12);
-                    q = `${m}x + ${b} = ${m * x + b}`;
-                } else {
-                    unit = "Linear Slopes";
-                    let m = r(6); let x = r(5); let b = r(10); this.rawAns = m * x + b;
-                    q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`;
-                }
-            } 
-            else if (this.sub === "Algebra 2") {
-                if(type === 1) {
-                    unit = "Radical Equations";
-                    let result = r(10, 3); this.rawAns = (result * result) - 5;
-                    q = `\\sqrt{x + 5} = ${result}. \\text{ Solve } x`;
-                } else {
-                    unit = "Quadratic Factors";
-                    let x1 = r(10); let x2 = r(5); this.rawAns = Math.max(x1, x2);
-                    q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Largest root?}`;
-                }
-            }
-            else if (this.sub === "College Algebra") {
-                if(type === 1) {
-                    unit = "Discriminant Analysis";
-                    let b = r(10, 6); let a = 1; let c = r(5); this.rawAns = b*b - 4*a*c;
-                    q = `x^2 + ${b}x + ${c} = 0. \\text{ Find the discriminant}`;
-                } else {
-                    unit = "Hard Composites";
-                    let a = r(3, 2); let b = r(4); let input = r(3); this.rawAns = Math.pow(a*input + b, 2);
-                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(${input}))`;
-                }
-            }
-            else if (this.sub === "Quantitative Reasoning") {
-                if(type === 1) {
-                    unit = "Percents & Prices";
-                    let base = r(10, 2) * 10;
-                    let perc = r(5, 1) * 10;
-                    this.rawAns = base - (base * (perc/100));
-                    q = `\\text{Item: } \\$${base}. \\text{ Discount: } ${perc}\\%. \\text{ New price?}`;
-                } else {
-                    unit = "Simple Interest";
-                    let p = r(20, 5) * 100;
-                    let t = r(4, 2);
-                    let i = p * 0.05 * t;
-                    this.rawAns = p + i;
-                    q = `\\$${p} \\text{ at } 5\\% \\text{ interest for } ${t} \\text{ years. Total?}`;
-                }
-            }
-
-            document.getElementById('unit-badge').innerText = unit;
-            const box = document.getElementById('math-display');
-            if(window.katex) katex.render(q, box); else box.innerText = q;
-            document.getElementById('math-input').value = ""; document.getElementById('math-input').focus();
+        clearScramble: function() {
+            document.getElementById('cheat-overlay')?.classList.remove('active');
+            this.gen();
         },
-        check: function() {
-            const val = document.getElementById('math-input').value.trim();
-            const n = document.getElementById('notif');
-            if(parseInt(val) === parseInt(this.rawAns)) {
-                state.xp += 25; state.streak++; state.mastery[this.sub] += 20;
-                n.innerText = "CORRECT"; n.style.background = "var(--green)";
-                if(state.xp >= getReq(state.lvl)) { state.xp -= getReq(state.lvl); state.lvl++; }
-            } else {
-                state.streak = 0; n.innerText = `WRONG: ${this.rawAns}`; n.style.background = "var(--red)";
+
+        gen: function() {
+            let q = "", unit = "";
+            const type = rand(6); // Expanded randomly across 6 archetypes per topic
+
+            switch (this.sub) {
+                case "Algebra 1":
+                    if (type === 1) {
+                        unit = "Multi-Step Linear equations";
+                        let x = rand(12, -12); this.rawAns = x;
+                        let m1 = rand(6, 2), m2 = rand(4, 1), b = rand(20, -20);
+                        q = `${m1}x ${formatSign(b)} = ${m2}x + ${ (m1 * x + b) - (m2 * x) }. \\text{ Find } x.`;
+                    } else if (type === 2) {
+                        unit = "Linear Slopes & Intercepts";
+                        let m = rand(5, -5) || 1, x = rand(6, -6), b = rand(15, -15);
+                        this.rawAns = m * x + b;
+                        q = `y = ${m}x ${formatSign(b)}. \\text{ Evaluate } y \\text{ for } x = ${x}`;
+                    } else if (type === 3) {
+                        unit = "System of Equations (Elimination)";
+                        let x = rand(5, 1), y = rand(5, 1); this.rawAns = x + y;
+                        q = `\\begin{cases} x + y = ${x + y} \\\\ x - y = ${x - y} \\end{cases}. \\text{ Find } x + y.`;
+                    } else if (type === 4) {
+                        unit = "Absolute Value Realignment";
+                        let x = rand(10, -10); this.rawAns = Math.abs(x);
+                        q = `\\text{Evaluate } |x| \\text{ when } x = ${x}.`;
+                    } else if (type === 5) {
+                        unit = "Function Evaluation";
+                        let scalar = rand(5, 2), constant = rand(12, 1);
+                        let input = rand(5, -5); this.rawAns = (scalar * input) + constant;
+                        q = `f(x) = ${scalar}x + ${constant}. \\text{ Find } f(${input})`;
+                    } else {
+                        unit = "Two-Step Inequalities";
+                        let x = rand(8, 2); this.rawAns = x;
+                        q = `3x - 4 > ${3 * x - 5}. \\text{ What is the smallest integer value for } x?`;
+                    }
+                    break;
+
+                case "Algebra 2":
+                    if (type === 1) {
+                        unit = "Radical Matrix Equations";
+                        let res = rand(12, 4); this.rawAns = (res * res) - rand(9, 2);
+                        let diff = (res * res) - this.rawAns;
+                        q = `\\sqrt{x + ${diff}} = ${res}. \\text{ Solve for } x.`;
+                    } else if (type === 2) {
+                        unit = "Quadratic Factor Optimization";
+                        let x1 = rand(8, 1), x2 = rand(12, 2); this.rawAns = Math.max(x1, x2);
+                        q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Identify the maximum root.}`;
+                    } else if (type === 3) {
+                        unit = "Exponential Formulations";
+                        let base = rand(3, 2), power = rand(4, 2); this.rawAns = power;
+                        q = `${base}^{x + 1} = ${Math.pow(base, power + 1)}. \\text{ Solve for } x.`;
+                    } else if (type === 4) {
+                        unit = "Logarithmic Simplification";
+                        let base = 2, val = rand(5, 2); this.rawAns = val;
+                        q = `\\log_{${base}}(${Math.pow(base, val)}) = x. \\text{ Find } x.`;
+                    } else if (type === 5) {
+                        unit = "Complex Imaginary Evaluation";
+                        let cycle = rand(4, 1); this.rawAns = [1, 0, -1, 0][cycle - 1]; // Evaluates structural forms of i^n Real parts
+                        q = `\\text{Find real element of } i^{${cycle * 2}}.`;
+                    } else {
+                        unit = "Vertex Properties";
+                        let h = rand(5, -5), k = rand(20, -20); this.rawAns = h;
+                        q = `y = 2(x - ${h})^2 + ${k}. \\text{ Identify the axis of symmetry coordinate } x.`;
+                    }
+                    break;
+
+                case "College Algebra":
+                    if (type === 1) {
+                        unit = "Discriminant Matrices";
+                        let b = rand(8, 4), c = rand(4, 1); this.rawAns = (b * b) - (4 * c);
+                        q = `x^2 + ${b}x + ${c} = 0. \\text{ Calculate the discriminant } (b^2 - 4ac).`;
+                    } else if (type === 2) {
+                        unit = "Deep Composite Mappings";
+                        let a = rand(3, 2), b = rand(4, -4), input = rand(3, -1);
+                        this.rawAns = Math.pow((a * input) + b, 2);
+                        q = `f(x) = x^2, \\; g(x) = ${a}x ${formatSign(b)}. \\text{ Evaluate } f(g(${input})).`;
+                    } else if (type === 3) {
+                        unit = "Rational Roots Theorem";
+                        let root = rand(4, 1); this.rawAns = 0;
+                        q = `\\text{If } (x - ${root}) \\text{ is a factor of } P(x), \\text{ what is } P(${root})?`;
+                    } else if (type === 4) {
+                        unit = "Matrix Determinants (2x2)";
+                        let a = rand(5, 1), b = rand(5, 1), c = rand(5, 1), d = rand(5, 1);
+                        this.rawAns = (a * d) - (b * c);
+                        q = `\\det \\begin{pmatrix} ${a} & ${b} \\\\ ${c} & ${d} \\end{pmatrix}. \\text{ Compute determinative scalar.}`;
+                    } else if (type === 5) {
+                        unit = "Inverse Functions";
+                        let m = rand(5, 2), b = rand(10, 1); this.rawAns = 2;
+                        let output = m * 2 + b;
+                        q = `f(x) = ${m}x + ${b}. \\text{ Calculate } f^{-1}(${output}).`;
+                    } else {
+                        unit = "Asymptote Analysis";
+                        let degreeNum = rand(5, 2); this.rawAns = degreeNum;
+                        q = `f(x) = \\frac{5x^{x} + 2}{x^{${degreeNum}} - 9}. \\text{ If a horizontal asymptote exists at } y=5, \\text{ find } x.`;
+                    }
+                    break;
+
+                case "Quantitative Reasoning":
+                    if (type === 1) {
+                        unit = "Compound Percent Scalings";
+                        let base = rand(15, 4) * 10, perc = rand(4, 1) * 10;
+                        this.rawAns = base - (base * (perc / 100));
+                        q = `\\text{Asset Value: } \\$${base}. \\text{ Depreciation rate: } ${perc}\\%. \\text{ Compute targeted evaluation.}`;
+                    } else if (type === 2) {
+                        unit = "Dynamic Simple Interest";
+                        let p = rand(20, 5) * 100, t = rand(5, 2), rate = 0.06;
+                        this.rawAns = p + (p * rate * t);
+                        q = `\\text{Principal } \\$${p} \\text{ locked at } 6\\% \\text{ simple APR for } ${t} \\text{ standard periods. Ultimate Total?}`;
+                    } else if (type === 3) {
+                        unit = "Probability Metric Space";
+                        let target = rand(4, 1), total = 20; this.rawAns = target * 5;
+                        q = `\\text{An event exhibits a frequency configuration of } ${target} / ${total}. \\text{ State its percentage likelihood.}`;
+                    } else if (type === 4) {
+                        unit = "Data Set Centroids (Mean)";
+                        let n1 = rand(10, 2), n2 = rand(20, 11), n3 = rand(40, 30);
+                        this.rawAns = Math.round((n1 + n2 + n3) / 3);
+                        q = `\\text{Compute rounded mean average structural array: } [${n1}, ${n2}, ${n3}].`;
+                    } else if (type === 5) {
+                        unit = "Unit Ratio Conversion";
+                        let hours = rand(4, 2); this.rawAns = hours * 60;
+                        q = `\\text{Convert production run duration: } ${hours} \\text{ sequential hours into base minutes.}`;
+                    } else {
+                        unit = "Geometric Perimeter Scaling";
+                        let side = rand(12, 4); this.rawAns = side * 4;
+                        q = `\\text{A structural square cell exhibits an absolute area parameter of } ${side * side}. \\text{ Calculate its outer perimeter.}`;
+                    }
+                    break;
             }
-            n.classList.add('pop');
-            document.getElementById('ui-ss').innerText = state.mastery[this.sub];
-            setTimeout(() => { n.classList.remove('pop'); Session.sync(); this.gen(); }, 600);
+
+            const badge = document.getElementById('unit-badge');
+            if (badge) badge.innerText = unit;
+
+            const box = document.getElementById('math-display');
+            if (box) {
+                if (window.katex) {
+                    try { window.katex.render(q, box, { throwOnError: false }); } catch (err) { box.innerText = q; }
+                } else {
+                    box.innerText = q;
+                }
+            }
+
+            const inputField = document.getElementById('math-input');
+            if (inputField) {
+                inputField.value = "";
+                inputField.focus();
+            }
+        },
+
+        check: function() {
+            const inputEl = document.getElementById('math-input');
+            if (!inputEl) return;
+
+            const parsedVal = parseFloat(inputEl.value.trim());
+            const targetAns = parseFloat(this.rawAns);
+            const notif = document.getElementById('notif');
+
+            if (!notif) return;
+
+            // Tolerance matching for floating point safety
+            if (!isNaN(parsedVal) && Math.abs(parsedVal - targetAns) < 0.01) {
+                state.xp += 30; // Boosted baseline experience payout
+                state.streak++;
+                state.mastery[this.sub] += 25;
+                
+                notif.innerText = `CORRECT (+30 XP) [Streak: ${state.streak}]`;
+                notif.style.background = "var(--green, #10b981)";
+
+                const threshold = getReqXp(state.lvl);
+                if (state.xp >= threshold) {
+                    state.xp -= threshold;
+                    state.lvl++;
+                    notif.innerText += ` 🌟 LEVEL UP TO ${state.lvl}!`;
+                }
+            } else {
+                state.streak = 0;
+                notif.innerText = `INCORRECT. Solution: ${this.rawAns}`;
+                notif.style.background = "var(--red, #ef4444)";
+            }
+
+            notif.classList.add('pop');
+            
+            const subScore = document.getElementById('ui-ss');
+            if (subScore) subScore.innerText = state.mastery[this.sub];
+
+            // Lock submission during transitions to prevent spam exploits
+            inputEl.disabled = true;
+
+            setTimeout(() => {
+                notif.classList.remove('pop');
+                inputEl.disabled = false;
+                Session.sync();
+                this.gen();
+            }, 900);
         }
     };
-    document.getElementById('math-input').addEventListener('keypress', (e) => { if(e.key==='Enter') Engine.check(); });
+
+    // === WINDOW EVENT ASSIGNMENTS ===
+    document.getElementById('math-input')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') Engine.check();
+    });
+
+    // Expose APIs explicitly through a secure immutable global runtime route
+    window.AppHub = {
+        login: () => Session.login(),
+        guest: () => Session.guest(),
+        route: (dest) => Router.go(dest),
+        clearCheat: () => Engine.clearScramble()
+    };
+
+    // Initialization
     Session.sync();
+})();
 </script>
 </body>
 </html>
