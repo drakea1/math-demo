@@ -12,60 +12,336 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+    
     <style>
-        :root { --primary: #40E0D0; --primary-dark: #33b5a8; --bg: #ffffff; --text: #2d3748; --text-light: #718096; --red: #ef4444; --green: #10b981; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: all 0.15s ease; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        
-        nav { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 1000; height: 75px; }
-        .nav-links { display: flex; height: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .nav-links::-webkit-scrollbar { display: none; }
-        .nav-link { display: flex; align-items: center; padding: 0 15px; cursor: pointer; font-weight: 700; color: var(--text-light); border-bottom: 4px solid transparent; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.8px; flex-shrink: 0; }
-        .nav-link.active { color: var(--primary-dark); border-bottom-color: var(--primary); background: rgba(64, 224, 208, 0.08); }
-        
-        .auth-trigger { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; font-size: 0.75rem; white-space: nowrap; }
-        
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .stats-bar { background: #f8fafc; padding: 20px 25px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .stats-top { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 0.9rem; }
-        .xp-rail { width: 100%; height: 14px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-        .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
-        
-        .view-card { background: white; padding: 40px 25px; border-radius: 24px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.02); position: relative; width: 100%; min-height: fit-content; }
-        .hidden { display: none !important; }
-        
-        #view-About { text-align: center; }
-        .about-image { width: 100%; max-width: 450px; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; margin: 0 auto 30px auto; border: 1px solid #e2e8f0; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: block; }
-        .about-content { max-width: 700px; margin: 0 auto; line-height: 1.8; font-size: 1.15rem; text-align: left; }
+        :root { 
+            --primary: #40E0D0; 
+            --primary-dark: #33b5a8; 
+            --bg: #ffffff; 
+            --text: #2d3748; 
+            --text-light: #718096; 
+            --red: #ef4444; 
+            --green: #10b981; 
+        }
 
-        #cheat-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; border-radius: 24px; opacity: 0; pointer-events: none; border: 5px solid var(--red); text-align: center; padding: 20px; }
-        #cheat-overlay.active { opacity: 1; pointer-events: auto; }
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', sans-serif; 
+            transition: all 0.15s ease; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: 50px; 
+        }
         
-        .unit-badge { font-size: 0.65rem; font-weight: 900; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 1px; background: rgba(64, 224, 208, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 15px; display: inline-block; }
+        nav { 
+            background: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 40px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            height: 75px; 
+        }
+
+        .nav-links { 
+            display: flex; 
+            height: 100%; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; 
+        }
+
+        .nav-links::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 0 15px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            color: var(--text-light); 
+            border-bottom: 4px solid transparent; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 0.8px; 
+            flex-shrink: 0; 
+        }
+
+        .nav-link.active { 
+            color: var(--primary-dark); 
+            border-bottom-color: var(--primary); 
+            background: rgba(64, 224, 208, 0.08); 
+        }
         
-        .math-box { font-size: 2.2rem; margin: 20px 0; text-align: center; min-height: 120px; color: #1a202c; display: flex; align-items: center; justify-content: center; overflow-x: auto; overflow-y: hidden; width: 100%; white-space: nowrap; padding: 10px 0; }
+        .auth-trigger { 
+            background: var(--primary); 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 0.75rem; 
+            white-space: nowrap; 
+        }
         
-        .ans-field { width: 100%; max-width: 350px; padding: 18px; font-size: 2rem; border: 3px solid #edf2f7; border-radius: 16px; text-align: center; outline: none; display: block; margin: 0 auto; }
-        .btn-submit { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 16px; font-weight: 800; cursor: pointer; margin-top: 25px; width: 100%; max-width: 350px; font-size: 1.2rem; }
+        .container { 
+            max-width: 1000px; 
+            margin: 30px auto; 
+            padding: 0 20px; 
+        }
+
+        .stats-bar { 
+            background: #f8fafc; 
+            padding: 20px 25px; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            border: 1px solid #e2e8f0; 
+        }
+
+        .stats-top { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: 900; 
+            font-size: 0.9rem; 
+        }
+
+        .xp-rail { 
+            width: 100%; 
+            height: 14px; 
+            background: #e2e8f0; 
+            border-radius: 10px; 
+            overflow: hidden; 
+        }
+
+        .xp-bar { 
+            height: 100%; 
+            background: var(--primary); 
+            width: 0%; 
+            transition: width 0.4s ease; 
+        }
         
-        #notif { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); padding: 12px 40px; border-radius: 40px; color: white; font-weight: 900; opacity: 0; z-index: 6000; pointer-events: none; width: max-content; }
-        .pop { opacity: 1 !important; transform: translateX(-50%) translateY(-15px) !important; }
+        .view-card { 
+            background: white; 
+            padding: 40px 25px; 
+            border-radius: 24px; 
+            border: 1px solid #eef2f6; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); 
+            position: relative; 
+            width: 100%; 
+            min-height: fit-content; 
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
         
-        #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 7000; backdrop-filter: blur(3px); }
-        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 380px; text-align: center; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
+        #view-About { 
+            text-align: center; 
+        }
+
+        .about-image { 
+            width: 100%; 
+            max-width: 450px; 
+            height: auto; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            border-radius: 20px; 
+            margin: 0 auto 30px auto; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            display: block; 
+        }
+
+        .about-content { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            line-height: 1.8; 
+            font-size: 1.15rem; 
+            text-align: left; 
+        }
+
+        #cheat-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(255, 255, 255, 0.98); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 5000; 
+            border-radius: 24px; 
+            opacity: 0; 
+            pointer-events: none; 
+            border: 5px solid var(--red); 
+            text-align: center; 
+            padding: 20px; 
+        }
+
+        #cheat-overlay.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+        
+        .unit-badge { 
+            font-size: 0.65rem; 
+            font-weight: 900; 
+            color: var(--primary-dark); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            background: rgba(64, 224, 208, 0.1); 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            margin-bottom: 15px; 
+            display: inline-block; 
+        }
+        
+        .math-box { 
+            font-size: 2.2rem; 
+            margin: 20px 0; 
+            text-align: center; 
+            min-height: 120px; 
+            color: #1a202c; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow-x: auto; 
+            overflow-y: hidden; 
+            width: 100%; 
+            white-space: nowrap; 
+            padding: 10px 0; 
+        }
+        
+        .ans-field { 
+            width: 100%; 
+            max-width: 350px; 
+            padding: 18px; 
+            font-size: 2rem; 
+            border: 3px solid #edf2f7; 
+            border-radius: 16px; 
+            text-align: center; 
+            outline: none; 
+            display: block; 
+            margin: 0 auto; 
+        }
+
+        .btn-submit { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 16px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            width: 100%; 
+            max-width: 350px; 
+            font-size: 1.2rem; 
+        }
+        
+        #notif { 
+            position: fixed; 
+            top: 15%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            padding: 12px 40px; 
+            border-radius: 40px; 
+            color: white; 
+            font-weight: 900; 
+            opacity: 0; 
+            z-index: 6000; 
+            pointer-events: none; 
+            width: max-content; 
+        }
+
+        .pop { 
+            opacity: 1 !important; 
+            transform: translateX(-50%) translateY(-15px) !important; 
+        }
+        
+        #auth-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.5); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 7000; 
+            backdrop-filter: blur(3px); 
+        }
+
+        .auth-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 380px; 
+            text-align: center; 
+        }
+
+        .auth-input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+        }
 
         @media (max-width: 768px) {
-            nav { padding: 0 15px; height: auto; flex-direction: column; gap: 10px; padding-top: 10px; }
-            .nav-links { width: 100%; border-top: 1px solid #eee; justify-content: flex-start; }
-            .nav-link { padding: 15px 10px; font-size: 0.6rem; }
-            .auth-trigger { width: 100%; margin-bottom: 10px; }
-            .container { margin: 15px auto; padding: 0 15px; }
-            .view-card { padding: 30px 15px; }
-            .math-box { font-size: 1.5rem; min-height: 80px; }
-            .ans-field { font-size: 1.5rem; padding: 12px; }
-            #home-stats { grid-template-columns: 1fr !important; }
-            .auth-card { width: 90%; padding: 25px; }
+            nav { 
+                padding: 10px 15px; 
+                height: auto; 
+                flex-direction: column; 
+                gap: 10px; 
+            }
+            .nav-links { 
+                width: 100%; 
+                border-top: 1px solid #eee; 
+                justify-content: flex-start; 
+            }
+            .nav-link { 
+                padding: 15px 10px; 
+                font-size: 0.6rem; 
+            }
+            .auth-trigger { 
+                width: 100%; 
+                margin-bottom: 10px; 
+            }
+            .container { 
+                margin: 15px auto; 
+                padding: 0 15px; 
+            }
+            .view-card { 
+                padding: 30px 15px; 
+            }
+            .math-box { 
+                font-size: 1.5rem; 
+                min-height: 80px; 
+            }
+            .ans-field { 
+                font-size: 1.5rem; 
+                padding: 12px; 
+            }
+            #home-stats { 
+                grid-template-columns: 1fr !important; 
+            }
+            .auth-card { 
+                width: 90%; 
+                padding: 25px; 
+            }
         }
     </style>
 </head>
@@ -76,31 +352,33 @@
         <h2 style="color:var(--primary-dark)">Secure Access</h2>
         <input type="email" id="email" class="auth-input" placeholder="Email Address">
         <input type="password" id="pass" class="auth-input" placeholder="Password">
-        <button class="auth-trigger" style="width:100%;" onclick="AppHub.login()">Login / Sign Up</button>
-        <p onclick="AppHub.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
+        <button class="auth-trigger" style="width:100%;" onclick="Session.login()">Login / Sign Up</button>
+        <p onclick="Session.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
     </div>
 </div>
 
 <nav>
     <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
     <div class="nav-links">
-        <div class="nav-link active" data-tab="Home" onclick="AppHub.route('Home')">Home</div>
-        <div class="nav-link" data-tab="About" onclick="AppHub.route('About')">About Me</div>
-        <div class="nav-link" data-tab="Algebra 1" onclick="AppHub.route('Algebra 1')">Algebra 1</div>
-        <div class="nav-link" data-tab="Algebra 2" onclick="AppHub.route('Algebra 2')">Algebra 2</div>
-        <div class="nav-link" data-tab="College Algebra" onclick="AppHub.route('College Algebra')">College Alg</div>
-        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="AppHub.route('Quantitative Reasoning')">Quant</div>
+        <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
+        <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
+        <div class="nav-link" data-tab="Algebra 1" onclick="Router.go('Algebra 1')">Algebra 1</div>
+        <div class="nav-link" data-tab="Algebra 2" onclick="Router.go('Algebra 2')">Algebra 2</div>
+        <div class="nav-link" data-tab="College Algebra" onclick="Router.go('College Algebra')">College Alg</div>
+        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="Router.go('Quantitative Reasoning')">Quant</div>
     </div>
 </nav>
 
-<div class="container">
+<main class="container">
     <div class="stats-bar">
         <div class="stats-top">
             <div style="color:var(--primary-dark)">LEVEL <span id="ui-lvl">1</span></div>
             <div style="font-size:0.8rem; color:var(--text-light)"><span id="ui-cur-xp">0</span> / <span id="ui-req-xp">100</span> XP</div>
             <div>🔥 <span id="ui-streak">0</span></div>
         </div>
-        <div class="xp-rail"><div class="xp-bar" id="ui-xp"></div></div>
+        <div class="xp-rail">
+            <div class="xp-bar" id="ui-xp"></div>
+        </div>
     </div>
 
     <section id="view-Home" class="view-card">
@@ -125,7 +403,7 @@
         <div id="cheat-overlay">
             <h1 style="color:var(--red); font-size: 1.5rem;">ANTI-AI SHIELD</h1>
             <p style="font-weight: bold;">Tab-switching detected. Problem scrambled.</p>
-            <button class="auth-trigger" onclick="AppHub.clearCheat()">RESUME</button>
+            <button class="auth-trigger" onclick="Engine.clearScramble()">RESUME</button>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h2 id="quiz-title" style="margin:0; font-size:0.9rem; color:var(--primary-dark);">SUBJECT</h2>
@@ -134,348 +412,214 @@
         <div id="unit-badge" class="unit-badge">UNIT</div>
         <div id="math-display" class="math-box"></div>
         <input type="number" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="numeric">
-        <button class="btn-submit" onclick="AppHub.check()">VERIFY</button>
+        <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
     </section>
-</div>
+</main>
 
 <div id="notif">CORRECT</div>
 
 <script>
-(() => {
-    // === ENCAPSULATED SECURE STATE ===
-    let state = {
-        xp: 0,
-        lvl: 1,
-        streak: 0,
-        mastery: { "Algebra 1": 0, "Algebra 2": 0, "College Algebra": 0, "Quantitative Reasoning": 0 }
+    let state = { 
+        xp: 0, 
+        lvl: 1, 
+        streak: 0, 
+        mastery: { 
+            "Algebra 1": 0, 
+            "Algebra 2": 0, 
+            "College Algebra": 0, 
+            "Quantitative Reasoning": 0 
+        } 
     };
 
-    // Advanced Level Scaling Formula: Exponential Curve
-    const getReqXp = (lvl) => Math.floor(100 * Math.pow(lvl, 1.2) * Math.pow(1.15, lvl - 1));
+    const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
 
-    // Utilities
-    const rand = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
-    const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
-
-    // === ANTI-CHEAT TAB TRACKER ===
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden") {
-            const quizView = document.getElementById('view-Quiz');
-            if (quizView && !quizView.classList.contains('hidden')) {
-                const overlay = document.getElementById('cheat-overlay');
-                if (overlay) overlay.classList.add('active');
-                state.streak = 0; // Wipe streak on suspicious behavior
-                Session.sync();
-            }
+        if (document.visibilityState === "hidden" && !document.getElementById('view-Quiz').classList.contains('hidden')) {
+            document.getElementById('cheat-overlay').classList.add('active');
         }
     });
 
-    // === AUTH & PERSISTENCE MODULE ===
     const Session = {
-        isLive: false,
+        isLive: false, 
         user: null,
-
         login: function() {
-            const emailInput = document.getElementById('email');
-            if (!emailInput || !emailInput.value) return;
-            
-            this.isLive = true;
-            this.user = emailInput.value.trim();
-            
-            const saved = localStorage.getItem(`mq_hard_v5_${btoa(this.user)}`);
-            if (saved) {
-                try { state = JSON.parse(saved); } catch(e) { console.error("Malformed storage payload."); }
-            }
-            
-            const authBtn = document.getElementById('auth-btn');
-            if (authBtn) authBtn.innerText = this.user.split('@')[0].toUpperCase();
-            
-            this.sync();
-            document.getElementById('auth-overlay')?.classList.add('hidden');
+            const e = document.getElementById('email').value; 
+            if (!e) return;
+            this.isLive = true; 
+            this.user = e;
+            const saved = localStorage.getItem(`mq_hard_v4_${e}`); 
+            if (saved) state = JSON.parse(saved);
+            document.getElementById('auth-btn').innerText = e.split('@')[0].toUpperCase();
+            this.sync(); 
+            document.getElementById('auth-overlay').classList.add('hidden');
         },
-
-        guest: function() {
-            this.isLive = false;
-            document.getElementById('auth-overlay')?.classList.add('hidden');
-            this.sync();
+        guest: function() { 
+            this.isLive = false; 
+            document.getElementById('auth-overlay').classList.add('hidden'); 
+            this.sync(); 
         },
-
         sync: function() {
-            const req = getReqXp(state.lvl);
-            const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+            const req = getReq(state.lvl);
+            document.getElementById('ui-lvl').innerText = state.lvl;
+            document.getElementById('ui-streak').innerText = state.streak;
+            document.getElementById('ui-cur-xp').innerText = Math.floor(state.xp);
+            document.getElementById('ui-req-xp').innerText = req;
+            document.getElementById('ui-xp').style.width = (state.xp / req * 100) + "%";
             
-            updateText('ui-lvl', state.lvl);
-            updateText('ui-streak', state.streak);
-            updateText('ui-cur-xp', Math.floor(state.xp));
-            updateText('ui-req-xp', req);
-            
-            const xpBar = document.getElementById('ui-xp');
-            if (xpBar) xpBar.style.width = Math.min(100, (state.xp / req * 100)) + "%";
-
-            const homeStats = document.getElementById('home-stats');
-            if (homeStats) {
-                homeStats.innerHTML = Object.entries(state.mastery)
-                    .map(([subject, points]) => `
-                        <div class="stat-card" style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; transition: transform 0.2s;">
-                            <b>${subject}</b><br>
-                            <span style="color:var(--primary-dark); font-size:1.5rem; font-weight:700;">${points} pts</span>
-                        </div>
-                    `).join('');
+            const h = document.getElementById('home-stats'); 
+            h.innerHTML = "";
+            for (let m in state.mastery) {
+                h.innerHTML += `
+                    <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0">
+                        <b>${m}</b><br>
+                        <span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span>
+                    </div>`;
             }
-
-            if (this.isLive) {
-                localStorage.setItem(`mq_hard_v5_${btoa(this.user)}`, JSON.stringify(state));
-            }
+            if (this.isLive) localStorage.setItem(`mq_hard_v4_${this.user}`, JSON.stringify(state));
         }
     };
 
-    // === APPLICATION ROUTER ===
     const Router = {
         go: function(id) {
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.toggle('active', link.getAttribute('data-tab') === id);
-            });
-            document.querySelectorAll('section').forEach(sec => sec.classList.add('hidden'));
-
-            if (id === 'Home') {
-                Session.sync();
-                document.getElementById('view-Home')?.classList.remove('hidden');
-            } else if (id === 'About') {
-                document.getElementById('view-About')?.classList.remove('hidden');
-            } else {
-                document.getElementById('view-Quiz')?.classList.remove('hidden');
-                Engine.init(id);
-            }
-        }
-    };
-
-    // === MATRIX ALGEBRA MATHEMATICS ENGINE ===
-    const Engine = {
-        sub: "",
-        rawAns: 0,
-
-        init: function(subject) {
-            this.sub = subject;
-            const title = document.getElementById('quiz-title');
-            if (title) title.innerText = subject;
-            this.gen();
-        },
-
-        clearScramble: function() {
-            document.getElementById('cheat-overlay')?.classList.remove('active');
-            this.gen();
-        },
-
-        gen: function() {
-            let q = "", unit = "";
-            const type = rand(6);
-
-            switch (this.sub) {
-                case "Algebra 1":
-                    if (type === 1) {
-                        unit = "Multi-Step Linear equations";
-                        let x = rand(12, -12); this.rawAns = x;
-                        let m1 = rand(6, 2), m2 = rand(4, 1), b = rand(20, -20);
-                        q = `${m1}x ${formatSign(b)} = ${m2}x + ${ (m1 * x + b) - (m2 * x) }. \\text{ Find } x.`;
-                    } else if (type === 2) {
-                        unit = "Linear Slopes & Intercepts";
-                        let m = rand(5, -5) || 1, x = rand(6, -6), b = rand(15, -15);
-                        this.rawAns = m * x + b;
-                        q = `y = ${m}x ${formatSign(b)}. \\text{ Evaluate } y \\text{ for } x = ${x}`;
-                    } else if (type === 3) {
-                        unit = "System of Equations (Elimination)";
-                        let x = rand(5, 1), y = rand(5, 1); this.rawAns = x + y;
-                        q = `\\begin{cases} x + y = ${x + y} \\\\ x - y = ${x - y} \\end{cases}. \\text{ Find } x + y.`;
-                    } else if (type === 4) {
-                        unit = "Absolute Value Realignment";
-                        let x = rand(10, -10); this.rawAns = Math.abs(x);
-                        q = `\\text{Evaluate } |x| \\text{ when } x = ${x}.`;
-                    } else if (type === 5) {
-                        unit = "Function Evaluation";
-                        let scalar = rand(5, 2), constant = rand(12, 1);
-                        let input = rand(5, -5); this.rawAns = (scalar * input) + constant;
-                        q = `f(x) = ${scalar}x + ${constant}. \\text{ Find } f(${input})`;
-                    } else {
-                        unit = "Two-Step Inequalities";
-                        let x = rand(8, 2); this.rawAns = x;
-                        q = `3x - 4 > ${3 * x - 5}. \\text{ What is the smallest integer value for } x?`;
-                    }
-                    break;
-
-                case "Algebra 2":
-                    if (type === 1) {
-                        unit = "Radical Matrix Equations";
-                        let res = rand(12, 4); this.rawAns = (res * res) - rand(9, 2);
-                        let diff = (res * res) - this.rawAns;
-                        q = `\\sqrt{x + ${diff}} = ${res}. \\text{ Solve for } x.`;
-                    } else if (type === 2) {
-                        unit = "Quadratic Factor Optimization";
-                        let x1 = rand(8, 1), x2 = rand(12, 2); this.rawAns = Math.max(x1, x2);
-                        q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Identify the maximum root.}`;
-                    } else if (type === 3) {
-                        unit = "Exponential Formulations";
-                        let base = rand(3, 2), power = rand(4, 2); this.rawAns = power;
-                        q = `${base}^{x + 1} = ${Math.pow(base, power + 1)}. \\text{ Solve for } x.`;
-                    } else if (type === 4) {
-                        unit = "Logarithmic Simplification";
-                        let base = 2, val = rand(5, 2); this.rawAns = val;
-                        q = `\\log_{${base}}(${Math.pow(base, val)}) = x. \\text{ Find } x.`;
-                    } else if (type === 5) {
-                        unit = "Complex Imaginary Evaluation";
-                        let cycle = rand(4, 1); this.rawAns = [1, 0, -1, 0][cycle - 1];
-                        q = `\\text{Find real element of } i^{${cycle * 2}}.`;
-                    } else {
-                        unit = "Vertex Properties";
-                        let h = rand(5, -5), k = rand(20, -20); this.rawAns = h;
-                        q = `y = 2(x - ${h})^2 + ${k}. \\text{ Identify the axis of symmetry coordinate } x.`;
-                    }
-                    break;
-
-                case "College Algebra":
-                    if (type === 1) {
-                        unit = "Discriminant Matrices";
-                        let b = rand(8, 4), c = rand(4, 1); this.rawAns = (b * b) - (4 * c);
-                        q = `x^2 + ${b}x + ${c} = 0. \\text{ Calculate the discriminant } (b^2 - 4ac).`;
-                    } else if (type === 2) {
-                        unit = "Deep Composite Mappings";
-                        let a = rand(3, 2), b = rand(4, -4), input = rand(3, -1);
-                        this.rawAns = Math.pow((a * input) + b, 2);
-                        q = `f(x) = x^2, \\; g(x) = ${a}x ${formatSign(b)}. \\text{ Evaluate } f(g(${input})).`;
-                    } else if (type === 3) {
-                        unit = "Rational Roots Theorem";
-                        let root = rand(4, 1); this.rawAns = 0;
-                        q = `\\text{If } (x - ${root}) \\text{ is a factor of } P(x), \\text{ what is } P(${root})?`;
-                    } else if (type === 4) {
-                        unit = "Matrix Determinants (2x2)";
-                        let a = rand(5, 1), b = rand(5, 1), c = rand(5, 1), d = rand(5, 1);
-                        this.rawAns = (a * d) - (b * c);
-                        q = `\\det \\begin{pmatrix} ${a} & ${b} \\\\ ${c} & ${d} \\end{pmatrix}. \\text{ Compute determinative scalar.}`;
-                    } else if (type === 5) {
-                        unit = "Inverse Functions";
-                        let m = rand(5, 2), b = rand(10, 1); this.rawAns = 2;
-                        let output = m * 2 + b;
-                        q = `f(x) = ${m}x + ${b}. \\text{ Calculate } f^{-1}(${output}).`;
-                    } else {
-                        unit = "Asymptote Analysis";
-                        let degreeNum = rand(5, 2); this.rawAns = degreeNum;
-                        q = `f(x) = \\frac{5x^{x} + 2}{x^{${degreeNum}} - 9}. \\text{ If a horizontal asymptote exists at } y=5, \\text{ find } x.`;
-                    }
-                    break;
-
-                case "Quantitative Reasoning":
-                    if (type === 1) {
-                        unit = "Compound Percent Scalings";
-                        let base = rand(15, 4) * 10, perc = rand(4, 1) * 10;
-                        this.rawAns = base - (base * (perc / 100));
-                        q = `\\text{Asset Value: } \\$${base}. \\text{ Depreciation rate: } ${perc}\\%. \\text{ Compute targeted evaluation.}`;
-                    } else if (type === 2) {
-                        unit = "Dynamic Simple Interest";
-                        let p = rand(20, 5) * 100, t = rand(5, 2), rate = 0.06;
-                        this.rawAns = p + (p * rate * t);
-                        q = `\\text{Principal } \\$${p} \\text{ locked at } 6\\% \\text{ simple APR for } ${t} \\text{ standard periods. Ultimate Total?}`;
-                    } else if (type === 3) {
-                        unit = "Probability Metric Space";
-                        let target = rand(4, 1), total = 20; this.rawAns = target * 5;
-                        q = `\\text{An event exhibits a frequency configuration of } ${target} / ${total}. \\text{ State its percentage likelihood.}`;
-                    } else if (type === 4) {
-                        unit = "Data Set Centroids (Mean)";
-                        let n1 = rand(10, 2), n2 = rand(20, 11), n3 = rand(40, 30);
-                        this.rawAns = Math.round((n1 + n2 + n3) / 3);
-                        q = `\\text{Compute rounded mean average structural array: } [${n1}, ${n2}, ${n3}].`;
-                    } else if (type === 5) {
-                        unit = "Unit Ratio Conversion";
-                        let hours = rand(4, 2); this.rawAns = hours * 60;
-                        q = `\\text{Convert production run duration: } ${hours} \\text{ sequential hours into base minutes.}`;
-                    } else {
-                        unit = "Geometric Perimeter Scaling";
-                        let side = rand(12, 4); this.rawAns = side * 4;
-                        q = `\\text{A structural square cell exhibits an absolute area parameter of } ${side * side}. \\text{ Calculate its outer perimeter.}`;
-                    }
-                    break;
-            }
-
-            const badge = document.getElementById('unit-badge');
-            if (badge) badge.innerText = unit;
-
-            const box = document.getElementById('math-display');
-            if (box) {
-                if (window.katex) {
-                    try { window.katex.render(q, box, { throwOnError: false }); } catch (err) { box.innerText = q; }
-                } else {
-                    box.innerText = q;
-                }
-            }
-
-            const inputField = document.getElementById('math-input');
-            if (inputField) {
-                inputField.value = "";
-                inputField.focus();
-            }
-        },
-
-        check: function() {
-            const inputEl = document.getElementById('math-input');
-            if (!inputEl) return;
-
-            const parsedVal = parseFloat(inputEl.value.trim());
-            const targetAns = parseFloat(this.rawAns);
-            const notif = document.getElementById('notif');
-
-            if (!notif) return;
-
-            if (!isNaN(parsedVal) && Math.abs(parsedVal - targetAns) < 0.01) {
-                state.xp += 30;
-                state.streak++;
-                state.mastery[this.sub] += 25;
-                
-                notif.innerText = `CORRECT (+30 XP) [Streak: ${state.streak}]`;
-                notif.style.background = "var(--green, #10b981)";
-
-                const threshold = getReqXp(state.lvl);
-                if (state.xp >= threshold) {
-                    state.xp -= threshold;
-                    state.lvl++;
-                    notif.innerText += ` 🌟 LEVEL UP TO ${state.lvl}!`;
-                }
-            } else {
-                state.streak = 0;
-                notif.innerText = `INCORRECT. Solution: ${this.rawAns}`;
-                notif.style.background = "var(--red, #ef4444)";
-            }
-
-            notif.classList.add('pop');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === id));
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             
-            const subScore = document.getElementById('ui-ss');
-            if (subScore) subScore.innerText = state.mastery[this.sub];
-
-            inputEl.disabled = true;
-
-            setTimeout(() => {
-                notif.classList.remove('pop');
-                inputEl.disabled = false;
-                Session.sync();
-                this.gen();
-            }, 900);
+            if (id === 'Home') { 
+                Session.sync(); 
+                document.getElementById(`view-Home`).classList.remove('hidden'); 
+            } else if (id === 'About') { 
+                document.getElementById(`view-About`).classList.remove('hidden'); 
+            } else { 
+                document.getElementById('view-Quiz').classList.remove('hidden'); 
+                Engine.init(id); 
+            }
         }
     };
 
-    // === WINDOW EVENT ASSIGNMENTS ===
-    document.getElementById('math-input')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') Engine.check();
-    });
+    const Engine = {
+        sub: "", 
+        rawAns: "",
+        init: function(s) { 
+            this.sub = s; 
+            document.getElementById('quiz-title').innerText = s; 
+            this.gen(); 
+        },
+        clearScramble: function() {
+            document.getElementById('cheat-overlay').classList.remove('active');
+            this.gen();
+        },
+        gen: function() {
+            const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
+            let q = "", unit = "";
+            let type = r(2); 
 
-    // Immutable safe system binding points mapping functions to global elements
-    window.AppHub = {
-        login: () => Session.login(),
-        guest: () => Session.guest(),
-        route: (dest) => Router.go(dest),
-        clearCheat: () => Engine.clearScramble(),
-        check: () => Engine.check()
+            if (this.sub === "Algebra 1") {
+                if (type === 1) {
+                    unit = "Solving for X";
+                    let x = r(15); 
+                    this.rawAns = x;
+                    let m = r(5,2); 
+                    let b = r(12);
+                    q = `${m}x + ${b} = ${m * x + b}`;
+                } else {
+                    unit = "Linear Slopes";
+                    let m = r(6); 
+                    let x = r(5); 
+                    let b = r(10); 
+                    this.rawAns = m * x + b;
+                    q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`;
+                }
+            } 
+            else if (this.sub === "Algebra 2") {
+                if (type === 1) {
+                    unit = "Radical Equations";
+                    let result = r(10, 3); 
+                    this.rawAns = (result * result) - 5;
+                    q = `\\sqrt{x + 5} = ${result}. \\text{ Solve } x`;
+                } else {
+                    unit = "Quadratic Factors";
+                    let x1 = r(10); 
+                    let x2 = r(5); 
+                    this.rawAns = Math.max(x1, x2);
+                    q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Largest root?}`;
+                }
+            }
+            else if (this.sub === "College Algebra") {
+                if (type === 1) {
+                    unit = "Discriminant Analysis";
+                    let b = r(10, 6); 
+                    let a = 1; 
+                    let c = r(5); 
+                    this.rawAns = b*b - 4*a*c;
+                    q = `x^2 + ${b}x + ${c} = 0. \\text{ Find the discriminant}`;
+                } else {
+                    unit = "Hard Composites";
+                    let a = r(3, 2); 
+                    let b = r(4); 
+                    let input = r(3); 
+                    this.rawAns = Math.pow(a*input + b, 2);
+                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(${input}))`;
+                }
+            }
+            else if (this.sub === "Quantitative Reasoning") {
+                if (type === 1) {
+                    unit = "Percents & Prices";
+                    let base = r(10, 2) * 10;
+                    let perc = r(5, 1) * 10;
+                    this.rawAns = base - (base * (perc/100));
+                    q = `\\text{Item: } \\$${base}. \\text{ Discount: } ${perc}\\%. \\text{ New price?}`;
+                } else {
+                    unit = "Simple Interest";
+                    let p = r(20, 5) * 100;
+                    let t = r(4, 2);
+                    let i = p * 0.05 * t;
+                    this.rawAns = p + i;
+                    q = `\\$${p} \\text{ at } 5\\% \\text{ interest for } ${t} \\text{ years. Total?}`;
+                }
+            }
+
+            document.getElementById('unit-badge').innerText = unit;
+            const box = document.getElementById('math-display');
+            if (window.katex) katex.render(q, box); else box.innerText = q;
+            document.getElementById('math-input').value = ""; 
+            document.getElementById('math-input').focus();
+        },
+        check: function() {
+            const val = document.getElementById('math-input').value.trim();
+            const n = document.getElementById('notif');
+            
+            if (parseInt(val) === parseInt(this.rawAns)) {
+                state.xp += 25; 
+                state.streak++; 
+                state.mastery[this.sub] += 20;
+                n.innerText = "CORRECT"; 
+                n.style.background = "var(--green)";
+                if (state.xp >= getReq(state.lvl)) { 
+                    state.xp -= getReq(state.lvl); 
+                    state.lvl++; 
+                }
+            } else {
+                state.streak = 0; 
+                n.innerText = `WRONG: ${this.rawAns}`; 
+                n.style.background = "var(--red)";
+            }
+            
+            n.classList.add('pop');
+            document.getElementById('ui-ss').innerText = state.mastery[this.sub];
+            
+            setTimeout(() => { 
+                n.classList.remove('pop'); 
+                Session.sync(); 
+                this.gen(); 
+            }, 600);
+        }
     };
 
-    // Initialization
+    document.getElementById('math-input').addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') Engine.check(); 
+    });
+    
     Session.sync();
-})();
 </script>
 </body>
 </html>
