@@ -360,7 +360,9 @@
 </div>
 
 <nav>
-    <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
+    <button class="auth-trigger" id="auth-btn" onclick="Session.login()">SIGN IN</button>
+
+<button class="auth-trigger" id="auth-btn" onclick="window.Session.login()">SIGN IN</button>
     <div class="nav-links">
         <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
         <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
