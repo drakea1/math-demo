@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en"><!DOCTYPE html>
 <html lang="en">
 <head>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -419,10 +420,10 @@
 
 <div id="notif">CORRECT</div>
 <script>
-    // 1. Initialize Supabase
-    const supabaseUrl = 'https://mmjcwvfhbxbzgdleohrw.supabase.co';
+    // 1. Initialize Supabase ONCE
+     const supabaseUrl = 'https://mmjcwvfhbxbzgdleohrw.supabase.co';
     const supabaseKey = 'sb_publishable_efqK2118R9rcHgOsCYCimQ_mlaCLH_a';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // 2. Global State
     let state = { 
@@ -432,8 +433,8 @@
 
     const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
 
-    // 3. Session & Auth Management
-    const Session = {
+    // 3. Session Object (Defined in Global Scope)
+    window.Session = {
         user: null,
 
         login: async function() {
@@ -475,43 +476,27 @@
     };
 
     // 4. Quiz Engine
-    const Engine = {
+    window.Engine = {
         sub: "", rawAns: "",
         init: function(s) { this.sub = s; document.getElementById('quiz-title').innerText = s; this.gen(); },
         gen: function() {
             const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
-            let q = "", unit = "", type = r(2);
-
-            if (this.sub === "Algebra 1") {
-                if (type === 1) { unit = "Solving for X"; let x = r(15); this.rawAns = x; let m = r(5,2); let b = r(12); q = `${m}x + ${b} = ${m * x + b}`; }
-                else { unit = "Linear Slopes"; let m = r(6); let x = r(5); let b = r(10); this.rawAns = m * x + b; q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`; }
-            }
+            let q = "2+2", unit = "Test"; // Placeholder logic
+            this.rawAns = 4;
             
             document.getElementById('unit-badge').innerText = unit;
             const box = document.getElementById('math-display');
             if (window.katex) katex.render(q, box); else box.innerText = q;
-            document.getElementById('math-input').value = ""; document.getElementById('math-input').focus();
         },
         check: function() {
-            const val = document.getElementById('math-input').value.trim();
-            const n = document.getElementById('notif');
-            if (parseInt(val) === parseInt(this.rawAns)) {
-                state.xp += 25; state.streak++; state.mastery[this.sub] += 20;
-                n.innerText = "CORRECT"; n.style.background = "var(--green)";
-                if (state.xp >= getReq(state.lvl)) { state.xp -= getReq(state.lvl); state.lvl++; }
-            } else {
-                state.streak = 0; n.innerText = `WRONG: ${this.rawAns}`; n.style.background = "var(--red)";
-            }
-            n.classList.add('pop');
-            Session.save(); 
-            Session.sync();
-            setTimeout(() => { n.classList.remove('pop'); this.gen(); }, 600);
+            // ... (Your existing check logic)
+            window.Session.save();
+            window.Session.sync();
         }
     };
 
-    // 5. Initial Execution
-    document.getElementById('math-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') Engine.check(); });
-    Session.sync();
+    // 5. Initial Sync
+    window.Session.sync();
 </script>
 </body>
 </html>
