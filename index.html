@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khulood Alhasan | MathHub</title>
@@ -417,208 +418,99 @@
 </main>
 
 <div id="notif">CORRECT</div>
-
 <script>
+    // 1. Initialize Supabase
+    const supabaseUrl = 'https://mmjcwvfhbxbzgdleohrw.supabase.co';
+    const supabaseKey = 'sb_publishable_efqK2118R9rcHgOsCYCimQ_mlaCLH_a';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // 2. Global State
     let state = { 
-        xp: 0, 
-        lvl: 1, 
-        streak: 0, 
-        mastery: { 
-            "Algebra 1": 0, 
-            "Algebra 2": 0, 
-            "College Algebra": 0, 
-            "Quantitative Reasoning": 0 
-        } 
+        xp: 0, lvl: 1, streak: 0, 
+        mastery: { "Algebra 1": 0, "Algebra 2": 0, "College Algebra": 0, "Quantitative Reasoning": 0 } 
     };
 
     const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
 
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden" && !document.getElementById('view-Quiz').classList.contains('hidden')) {
-            document.getElementById('cheat-overlay').classList.add('active');
-        }
-    });
-
+    // 3. Session & Auth Management
     const Session = {
-        isLive: false, 
         user: null,
-        login: function() {
-            const e = document.getElementById('email').value; 
-            if (!e) return;
-            this.isLive = true; 
-            this.user = e;
-            const saved = localStorage.getItem(`mq_hard_v4_${e}`); 
-            if (saved) state = JSON.parse(saved);
-            document.getElementById('auth-btn').innerText = e.split('@')[0].toUpperCase();
-            this.sync(); 
+
+        login: async function() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+
+            if (error) { alert(error.message); return; }
+            this.user = data.user;
+            await this.fetchProgress();
             document.getElementById('auth-overlay').classList.add('hidden');
         },
-        guest: function() { 
-            this.isLive = false; 
-            document.getElementById('auth-overlay').classList.add('hidden'); 
-            this.sync(); 
+
+        fetchProgress: async function() {
+            const { data } = await supabase.from('profiles').select('state').eq('id', this.user.id).single();
+            if (data) state = data.state;
+            this.sync();
         },
+
+        save: async function() {
+            if (!this.user) return;
+            await supabase.from('profiles').upsert({ id: this.user.id, state: state });
+        },
+
         sync: function() {
             const req = getReq(state.lvl);
             document.getElementById('ui-lvl').innerText = state.lvl;
             document.getElementById('ui-streak').innerText = state.streak;
             document.getElementById('ui-cur-xp').innerText = Math.floor(state.xp);
             document.getElementById('ui-req-xp').innerText = req;
-            document.getElementById('ui-xp').style.width = (state.xp / req * 100) + "%";
+            document.getElementById('ui-xp').style.width = Math.min((state.xp / req * 100), 100) + "%";
             
             const h = document.getElementById('home-stats'); 
             h.innerHTML = "";
             for (let m in state.mastery) {
-                h.innerHTML += `
-                    <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0">
-                        <b>${m}</b><br>
-                        <span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span>
-                    </div>`;
-            }
-            if (this.isLive) localStorage.setItem(`mq_hard_v4_${this.user}`, JSON.stringify(state));
-        }
-    };
-
-    const Router = {
-        go: function(id) {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === id));
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            
-            if (id === 'Home') { 
-                Session.sync(); 
-                document.getElementById(`view-Home`).classList.remove('hidden'); 
-            } else if (id === 'About') { 
-                document.getElementById(`view-About`).classList.remove('hidden'); 
-            } else { 
-                document.getElementById('view-Quiz').classList.remove('hidden'); 
-                Engine.init(id); 
+                h.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0"><b>${m}</b><br><span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span></div>`;
             }
         }
     };
 
+    // 4. Quiz Engine
     const Engine = {
-        sub: "", 
-        rawAns: "",
-        init: function(s) { 
-            this.sub = s; 
-            document.getElementById('quiz-title').innerText = s; 
-            this.gen(); 
-        },
-        clearScramble: function() {
-            document.getElementById('cheat-overlay').classList.remove('active');
-            this.gen();
-        },
+        sub: "", rawAns: "",
+        init: function(s) { this.sub = s; document.getElementById('quiz-title').innerText = s; this.gen(); },
         gen: function() {
             const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
-            let q = "", unit = "";
-            let type = r(2); 
+            let q = "", unit = "", type = r(2);
 
             if (this.sub === "Algebra 1") {
-                if (type === 1) {
-                    unit = "Solving for X";
-                    let x = r(15); 
-                    this.rawAns = x;
-                    let m = r(5,2); 
-                    let b = r(12);
-                    q = `${m}x + ${b} = ${m * x + b}`;
-                } else {
-                    unit = "Linear Slopes";
-                    let m = r(6); 
-                    let x = r(5); 
-                    let b = r(10); 
-                    this.rawAns = m * x + b;
-                    q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`;
-                }
-            } 
-            else if (this.sub === "Algebra 2") {
-                if (type === 1) {
-                    unit = "Radical Equations";
-                    let result = r(10, 3); 
-                    this.rawAns = (result * result) - 5;
-                    q = `\\sqrt{x + 5} = ${result}. \\text{ Solve } x`;
-                } else {
-                    unit = "Quadratic Factors";
-                    let x1 = r(10); 
-                    let x2 = r(5); 
-                    this.rawAns = Math.max(x1, x2);
-                    q = `x^2 - ${x1 + x2}x + ${x1 * x2} = 0. \\text{ Largest root?}`;
-                }
+                if (type === 1) { unit = "Solving for X"; let x = r(15); this.rawAns = x; let m = r(5,2); let b = r(12); q = `${m}x + ${b} = ${m * x + b}`; }
+                else { unit = "Linear Slopes"; let m = r(6); let x = r(5); let b = r(10); this.rawAns = m * x + b; q = `y = ${m}x + ${b}. \\text{ Find } y \\text{ when } x = ${x}`; }
             }
-            else if (this.sub === "College Algebra") {
-                if (type === 1) {
-                    unit = "Discriminant Analysis";
-                    let b = r(10, 6); 
-                    let a = 1; 
-                    let c = r(5); 
-                    this.rawAns = b*b - 4*a*c;
-                    q = `x^2 + ${b}x + ${c} = 0. \\text{ Find the discriminant}`;
-                } else {
-                    unit = "Hard Composites";
-                    let a = r(3, 2); 
-                    let b = r(4); 
-                    let input = r(3); 
-                    this.rawAns = Math.pow(a*input + b, 2);
-                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(${input}))`;
-                }
-            }
-            else if (this.sub === "Quantitative Reasoning") {
-                if (type === 1) {
-                    unit = "Percents & Prices";
-                    let base = r(10, 2) * 10;
-                    let perc = r(5, 1) * 10;
-                    this.rawAns = base - (base * (perc/100));
-                    q = `\\text{Item: } \\$${base}. \\text{ Discount: } ${perc}\\%. \\text{ New price?}`;
-                } else {
-                    unit = "Simple Interest";
-                    let p = r(20, 5) * 100;
-                    let t = r(4, 2);
-                    let i = p * 0.05 * t;
-                    this.rawAns = p + i;
-                    q = `\\$${p} \\text{ at } 5\\% \\text{ interest for } ${t} \\text{ years. Total?}`;
-                }
-            }
-
+            
             document.getElementById('unit-badge').innerText = unit;
             const box = document.getElementById('math-display');
             if (window.katex) katex.render(q, box); else box.innerText = q;
-            document.getElementById('math-input').value = ""; 
-            document.getElementById('math-input').focus();
+            document.getElementById('math-input').value = ""; document.getElementById('math-input').focus();
         },
         check: function() {
             const val = document.getElementById('math-input').value.trim();
             const n = document.getElementById('notif');
-            
             if (parseInt(val) === parseInt(this.rawAns)) {
-                state.xp += 25; 
-                state.streak++; 
-                state.mastery[this.sub] += 20;
-                n.innerText = "CORRECT"; 
-                n.style.background = "var(--green)";
-                if (state.xp >= getReq(state.lvl)) { 
-                    state.xp -= getReq(state.lvl); 
-                    state.lvl++; 
-                }
+                state.xp += 25; state.streak++; state.mastery[this.sub] += 20;
+                n.innerText = "CORRECT"; n.style.background = "var(--green)";
+                if (state.xp >= getReq(state.lvl)) { state.xp -= getReq(state.lvl); state.lvl++; }
             } else {
-                state.streak = 0; 
-                n.innerText = `WRONG: ${this.rawAns}`; 
-                n.style.background = "var(--red)";
+                state.streak = 0; n.innerText = `WRONG: ${this.rawAns}`; n.style.background = "var(--red)";
             }
-            
             n.classList.add('pop');
-            document.getElementById('ui-ss').innerText = state.mastery[this.sub];
-            
-            setTimeout(() => { 
-                n.classList.remove('pop'); 
-                Session.sync(); 
-                this.gen(); 
-            }, 600);
+            Session.save(); 
+            Session.sync();
+            setTimeout(() => { n.classList.remove('pop'); this.gen(); }, 600);
         }
     };
 
-    document.getElementById('math-input').addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter') Engine.check(); 
-    });
-    
+    // 5. Initial Execution
+    document.getElementById('math-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') Engine.check(); });
     Session.sync();
 </script>
 </body>
