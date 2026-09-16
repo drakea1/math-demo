@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- KaTeX for rendering LaTeX equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khulood Alhasan | MathHub</title>
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <meta property="og:title" content="Khulood Alhasan | MathHub">
+    <meta property="og:description" content="24 years of experience teaching math.">
+    <meta property="og:image" content="logo.jpg">
+
+    <style>
+        :root { 
+            --primary: #40E0D0; 
+            --primary-dark: #33b5a8; 
+            --bg: #ffffff; 
+            --text: #2d3748; 
+            --text-light: #718096; 
+            --red: #ef4444; 
+            --green: #10b981; 
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', sans-serif; 
+            transition: all 0.15s ease; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: 50px; 
+        }
+        
+        nav { 
+            background: white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 40px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            height: 75px; 
+        }
+
+        .nav-links { 
+            display: flex; 
+            height: 100%; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; 
+        }
+
+        .nav-links::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 0 15px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            color: var(--text-light); 
+            border-bottom: 4px solid transparent; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 0.8px; 
+            flex-shrink: 0; 
+        }
+
+        .nav-link.active { 
+            color: var(--primary-dark); 
+            border-bottom-color: var(--primary); 
+            background: rgba(64, 224, 208, 0.08); 
+        }
+        
+        .auth-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-trigger { 
+            background: var(--primary); 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 0.75rem; 
+            white-space: nowrap; 
+        }
+
+        .btn-logout {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid #cbd5e1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        
+        .container { 
+            max-width: 1000px; 
+            margin: 30px auto; 
+            padding: 0 20px; 
+        }
+
+        .stats-bar { 
+            background: #f8fafc; 
+            padding: 20px 25px; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            border: 1px solid #e2e8f0; 
+        }
+
+        .stats-top { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: 900; 
+            font-size: 0.9rem; 
+        }
+
+        .xp-rail { 
+            width: 100%; 
+            height: 14px; 
+            background: #e2e8f0; 
+            border-radius: 10px; 
+            overflow: hidden; 
+        }
+
+        .xp-bar { 
+            height: 100%; 
+            background: var(--primary); 
+            width: 0%; 
+            transition: width 0.4s ease; 
+        }
+        
+        .view-card { 
+            background: white; 
+            padding: 40px 25px; 
+            border-radius: 24px; 
+            border: 1px solid #eef2f6; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); 
+            position: relative; 
+            width: 100%; 
+            min-height: fit-content; 
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+        
+        #view-About { 
+            text-align: center; 
+        }
+
+        .about-image { 
+            width: 100%; 
+            max-width: 450px; 
+            height: auto; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            border-radius: 20px; 
+            margin: 0 auto 30px auto; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            display: block; 
+        }
+
+        .about-content { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            line-height: 1.8; 
+            font-size: 1.15rem; 
+            text-align: left; 
+        }
+
+        #cheat-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(255, 255, 255, 0.98); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 5000; 
+            border-radius: 24px; 
+            opacity: 0; 
+            pointer-events: none; 
+            border: 5px solid var(--red); 
+            text-align: center; 
+            padding: 20px; 
+        }
+
+        #cheat-overlay.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+        
+        .unit-badge { 
+            font-size: 0.7rem; 
+            font-weight: 900; 
+            color: var(--primary-dark); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            background: rgba(64, 224, 208, 0.1); 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            margin-bottom: 15px; 
+            display: inline-block; 
+        }
+        
+        .math-box { 
+            font-size: 2rem; 
+            margin: 20px 0; 
+            text-align: center; 
+            min-height: 120px; 
+            color: #1a202c; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow-x: auto; 
+            overflow-y: hidden; 
+            width: 100%; 
+            white-space: nowrap; 
+            padding: 10px 0; 
+        }
+        
+        .ans-field { 
+            width: 100%; 
+            max-width: 350px; 
+            padding: 18px; 
+            font-size: 2rem; 
+            border: 3px solid #edf2f7; 
+            border-radius: 16px; 
+            text-align: center; 
+            outline: none; 
+            display: block; 
+            margin: 0 auto; 
+        }
+
+        .btn-submit { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 16px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            width: 100%; 
+            max-width: 350px; 
+            font-size: 1.2rem; 
+        }
+        
+        #notif { 
+            position: fixed; 
+            top: 15%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            padding: 12px 40px; 
+            border-radius: 40px; 
+            color: white; 
+            font-weight: 900; 
+            opacity: 0; 
+            z-index: 6000; 
+            pointer-events: none; 
+            width: max-content; 
+        }
+
+        .pop { 
+            opacity: 1 !important; 
+            transform: translateX(-50%) translateY(-15px) !important; 
+        }
+        
+        #auth-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.5); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 7000; 
+            backdrop-filter: blur(3px); 
+        }
+
+        .auth-card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 380px; 
+            text-align: center; 
+        }
+
+        .auth-input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+        }
+
+        @media (max-width: 768px) {
+            nav { 
+                padding: 10px 15px; 
+                height: auto; 
+                flex-direction: column; 
+                gap: 10px; 
+            }
+            .nav-links { 
+                width: 100%; 
+                border-top: 1px solid #eee; 
+                justify-content: flex-start; 
+            }
+            .nav-link { 
+                padding: 15px 10px; 
+                font-size: 0.6rem; 
+            }
+            .auth-controls { 
+                width: 100%; 
+                justify-content: center; 
+                margin-bottom: 5px; 
+            }
+            .container { 
+                margin: 15px auto; 
+                padding: 0 15px; 
+            }
+            .view-card { 
+                padding: 30px 15px; 
+            }
+            .math-box { 
+                font-size: 1.4rem; 
+                min-height: 80px; 
+            }
+            .ans-field { 
+                font-size: 1.5rem; 
+                padding: 12px; 
+            }
+            #home-stats { 
+                grid-template-columns: 1fr !important; 
+            }
+            .auth-card { 
+                width: 90%; 
+                padding: 25px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="auth-overlay">
+    <div class="auth-card">
+        <h2 style="color:var(--primary-dark)">Secure Access</h2>
+        <input type="email" id="email" class="auth-input" placeholder="Email Address">
+        <input type="password" id="pass" class="auth-input" placeholder="Password">
+        <button class="auth-trigger" style="width:100%;" onclick="Session.login()">Login / Sign Up</button>
+        <p onclick="Session.guest()" style="margin-top:15px; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Continue as Guest</p>
+    </div>
+</div>
+
+<nav>
+    <div class="auth-controls">
+        <button class="auth-trigger" id="auth-btn" onclick="document.getElementById('auth-overlay').classList.remove('hidden')">SIGN IN</button>
+        <button class="btn-logout hidden" id="logout-btn" onclick="Session.logout()">LOGOUT</button>
+    </div>
+    <div class="nav-links">
+        <div class="nav-link active" data-tab="Home" onclick="Router.go('Home')">Home</div>
+        <div class="nav-link" data-tab="About" onclick="Router.go('About')">About Me</div>
+        <div class="nav-link" data-tab="Algebra 1" onclick="Router.go('Algebra 1')">Algebra 1</div>
+        <div class="nav-link" data-tab="Geometry" onclick="Router.go('Geometry')">Geometry</div>
+        <div class="nav-link" data-tab="Algebra 2" onclick="Router.go('Algebra 2')">Algebra 2</div>
+        <div class="nav-link" data-tab="College Algebra" onclick="Router.go('College Algebra')">College Alg</div>
+        <div class="nav-link" data-tab="Quantitative Reasoning" onclick="Router.go('Quantitative Reasoning')">Quant</div>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="stats-bar">
+        <div class="stats-top">
+            <div style="color:var(--primary-dark)">LEVEL <span id="ui-lvl">1</span></div>
+            <div style="font-size:0.8rem; color:var(--text-light)"><span id="ui-cur-xp">0</span> / <span id="ui-req-xp">100</span> XP</div>
+            <div>🔥 <span id="ui-streak">0</span></div>
+        </div>
+        <div class="xp-rail">
+            <div class="xp-bar" id="ui-xp"></div>
+        </div>
+    </div>
+
+    <section id="view-Home" class="view-card">
+        <h1>Mastery Overview</h1>
+        <div id="home-stats" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 15px;"></div>
+    </section>
+
+    <section id="view-About" class="view-card hidden">
+        <img src="mompic.jpg" alt="Khulood Alhasan" class="about-image">
+        <div class="about-content">
+            <h1 style="color:var(--primary-dark); margin-bottom: 20px; text-align: center;">Khulood Alhasan</h1>
+            <p>Hello! My name is <b>Khulood Alhasan</b>. I have been a teacher for 24 years—spending 14 years teaching in the Middle East and the last 10 years here in the United States.</p>
+            <p>Throughout my career, the most important thing to me has always been my students. I truly care about each of you, and I care deeply about teaching you math in a way that actually makes sense.</p>
+            <p>I created this platform to give you a place to practice and grow your confidence. I am here to support you and help you get exactly where you need to be.</p>
+            <p style="color:var(--text-light); font-style: italic; margin-top:40px; text-align: center; border-top: 1px solid #f0f0f0; padding-top: 20px;">
+                "Teaching math is what I do, but helping my students succeed is why I do it."
+            </p>
+        </div>
+    </section>
+
+    <section id="view-Quiz" class="view-card hidden" style="text-align:center;">
+        <div id="cheat-overlay">
+            <h1 style="color:var(--red); font-size: 1.5rem;">ANTI-AI SHIELD</h1>
+            <p style="font-weight: bold;">Tab-switching detected. Problem scrambled.</p>
+            <button class="auth-trigger" onclick="Engine.clearScramble()">RESUME</button>
+        </div>
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px;">
+            <h2 id="quiz-title" style="margin:0; font-size:0.9rem; color:var(--primary-dark);">SUBJECT</h2>
+            <div style="font-weight:900; font-size: 0.8rem;">Mastery: <span id="ui-ss">0</span></div>
+        </div>
+        <div id="unit-badge" class="unit-badge">UNIT</div>
+        <div id="math-display" class="math-box"></div>
+        <input type="number" id="math-input" class="ans-field" placeholder="Answer..." autocomplete="off" inputmode="numeric">
+        <button class="btn-submit" onclick="Engine.check()">VERIFY</button>
+    </section>
+</main>
+
+<div id="notif">CORRECT</div>
+
+<script>
+    const SUPABASE_URL = 'https://fmxifpklorzmqrvirpwp.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_96xk269dM4_styb-81R4NA_bI_Px8EI';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let state = { 
+        xp: 0, 
+        lvl: 1, 
+        streak: 0, 
+        mastery: { 
+            "Algebra 1": 0, 
+            "Geometry": 0,
+            "Algebra 2": 0, 
+            "College Algebra": 0, 
+            "Quantitative Reasoning": 0 
+        } 
+    };
+
+    const getReq = (l) => Math.floor(l * 100 * Math.pow(1.15, l - 1));
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden" && !document.getElementById('view-Quiz').classList.contains('hidden')) {
+            document.getElementById('cheat-overlay').classList.add('active');
+        }
+    });
+
+    const Session = {
+        isLive: false, 
+        user: null,
+
+        // Auto restore session on page reload/refresh
+        init: async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                this.isLive = true;
+                this.user = session.user.email;
+                await this.loadProgress();
+                this.updateAuthUI(session.user.email);
+            } else {
+                this.syncUIOnly();
+            }
+
+            // Listen to auth status changes
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (session) {
+                    this.isLive = true;
+                    this.user = session.user.email;
+                    await this.loadProgress();
+                    this.updateAuthUI(session.user.email);
+                } else {
+                    this.isLive = false;
+                    this.user = null;
+                    document.getElementById('auth-btn').innerText = "SIGN IN";
+                    document.getElementById('logout-btn').classList.add('hidden');
+                }
+            });
+        },
+
+        updateAuthUI: function(email) {
+            document.getElementById('auth-btn').innerText = email.split('@')[0].toUpperCase();
+            document.getElementById('logout-btn').classList.remove('hidden');
+            document.getElementById('auth-overlay').classList.add('hidden');
+        },
+
+        login: async function() {
+            const e = document.getElementById('email').value.trim(); 
+            const p = document.getElementById('pass').value.trim(); 
+            if (!e) return;
+
+            let authResponse;
+            if (p) {
+                // Try logging in first
+                authResponse = await supabaseClient.auth.signInWithPassword({ email: e, password: p });
+                // If login fails because user doesn't exist, create account
+                if (authResponse.error) {
+                    authResponse = await supabaseClient.auth.signUp({ email: e, password: p });
+                }
+            } else {
+                authResponse = await supabaseClient.auth.signInWithOtp({ email: e });
+            }
+
+            if (authResponse.error) {
+                alert('Authentication failed: ' + authResponse.error.message);
+                return;
+            }
+
+            this.isLive = true; 
+            this.user = e;
+            await this.loadProgress();
+            this.updateAuthUI(e);
+        },
+
+        logout: async function() {
+            if (this.isLive) {
+                await supabaseClient.auth.signOut();
+            }
+            this.isLive = false;
+            this.user = null;
+            document.getElementById('auth-btn').innerText = "SIGN IN";
+            document.getElementById('logout-btn').classList.add('hidden');
+            this.syncUIOnly();
+        },
+
+        guest: function() { 
+            this.isLive = false; 
+            document.getElementById('auth-overlay').classList.add('hidden'); 
+            this.sync(); 
+        },
+
+        loadProgress: async function() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+
+            let { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                state.xp = data.xp || 0;
+                state.lvl = data.lvl || 1;
+                state.streak = data.streak || 0;
+                state.mastery = Object.assign(state.mastery, data.mastery || {});
+            } else {
+                await supabaseClient.from('profiles').insert([{ 
+                    id: user.id, 
+                    xp: state.xp, 
+                    lvl: state.lvl, 
+                    streak: state.streak, 
+                    mastery: state.mastery 
+                }]);
+            }
+            this.syncUIOnly();
+        },
+
+        saveProgress: async function() {
+            if (!this.isLive) return;
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabaseClient
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    xp: state.xp,
+                    lvl: state.lvl,
+                    streak: state.streak,
+                    mastery: state.mastery,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) console.error('Failed to save state to Supabase:', error.message);
+        },
+
+        syncUIOnly: function() {
+            const req = getReq(state.lvl);
+            document.getElementById('ui-lvl').innerText = state.lvl;
+            document.getElementById('ui-streak').innerText = state.streak;
+            document.getElementById('ui-cur-xp').innerText = Math.floor(state.xp);
+            document.getElementById('ui-req-xp').innerText = req;
+            
+            const pct = Math.min(100, Math.max(0, (state.xp / req) * 100));
+            document.getElementById('ui-xp').style.width = pct + "%";
+            
+            const h = document.getElementById('home-stats'); 
+            if (h) {
+                h.innerHTML = "";
+                for (let m in state.mastery) {
+                    h.innerHTML += `
+                        <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0">
+                            <b>${m}</b><br>
+                            <span style="color:var(--primary-dark); font-size:1.5rem;">${state.mastery[m]}</span>
+                        </div>`;
+                }
+            }
+        },
+
+        sync: function() {
+            this.syncUIOnly();
+            if (this.isLive) {
+                this.saveProgress();
+            }
+        }
+    };
+
+    const Router = {
+        go: function(id) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.getAttribute('data-tab') === id));
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            
+            if (id === 'Home') { 
+                Session.sync(); 
+                document.getElementById(`view-Home`).classList.remove('hidden'); 
+            } else if (id === 'About') { 
+                document.getElementById(`view-About`).classList.remove('hidden'); 
+            } else { 
+                document.getElementById('view-Quiz').classList.remove('hidden'); 
+                Engine.init(id); 
+            }
+        }
+    };
+
+    const Engine = {
+        sub: "", 
+        rawAns: "",
+        init: function(s) { 
+            this.sub = s; 
+            document.getElementById('quiz-title').innerText = s; 
+            document.getElementById('ui-ss').innerText = state.mastery[this.sub] || 0;
+            this.gen(); 
+        },
+        clearScramble: function() {
+            document.getElementById('cheat-overlay').classList.remove('active');
+            this.gen();
+        },
+        gen: function() {
+            const r = (max, min=1) => Math.floor(Math.random() * (max - min + 1)) + min;
+            let q = "", unit = "";
+
+            if (this.sub === "Algebra 1") {
+                const uIdx = r(20);
+                switch(uIdx) {
+                    case 1: unit = "Foundations of Real Numbers"; let a1=r(20,-10), b1=r(20,-10); this.rawAns = a1 + b1; q = `\\text{Evaluate: } (${a1}) + (${b1})`; break;
+                    case 2: unit = "Expressions & Inequalities"; let x2=r(5); this.rawAns = 3*x2 + 7; q = `\\text{Evaluate } 3x + 7 \\text{ for } x = ${x2}`; break;
+                    case 3: unit = "Multi-Step Linear Equations"; let x3=r(10, -5), m3=r(6,2), b3=r(15); this.rawAns = x3; q = `\\text{Solve: } ${m3}x + ${b3} = ${m3*x3 + b3}`; break;
+                    case 4: unit = "Linear Inequalities"; let x4=r(10, 1); this.rawAns = x4 + 1; q = `\\text{Smallest integer solution to } 2x - 4 > ${2*x4 - 4}`; break;
+                    case 5: unit = "Domain & Range"; let dom=r(10, 2); this.rawAns = dom; q = `f(x) = \\sqrt{x - ${dom}}. \\text{ Min domain value of } x?`; break;
+                    case 6: unit = "Evaluating Functions"; let x6=r(6, -3); this.rawAns = 2*x6*x6 - 3; q = `f(x) = 2x^2 - 3. \\text{ Find } f(${x6})`; break;
+                    case 7: unit = "Rate of Change & Slope"; let m7=r(5,1), b7=r(8); this.rawAns = m7; q = `\\text{Find slope of } y = ${m7}x + ${b7}`; break;
+                    case 8: unit = "Writing Linear Equations"; let m8=r(4,1), x8=r(5), b8=r(6); this.rawAns = b8; q = `\\text{Line has slope } ${m8} \\text{ through } (${x8}, ${m8*x8+b8}). \\text{ Find y-intercept } b`; break;
+                    case 9: unit = "Systems (Substitution)"; let x9=r(5), y9=r(5); this.rawAns = x9; q = `\\begin{cases} x + y = ${x9+y9} \\\\ x - y = ${x9-y9} \\end{cases}. \\text{ Find } x`; break;
+                    case 10: unit = "Systems (Elimination)"; let x10=r(6), y10=r(4); this.rawAns = y10; q = `\\begin{cases} 2x + y = ${2*x10+y10} \\\\ 2x - y = ${2*x10-y10} \\end{cases}. \\text{ Find } y`; break;
+                    case 11: unit = "Exponential Growth"; let a11=r(5,2), t11=r(3,2); this.rawAns = a11 * Math.pow(2, t11); q = `y = ${a11} \\cdot 2^t. \\text{ Find } y \\text{ when } t = ${t11}`; break;
+                    case 12: unit = "Properties of Exponents"; let p12=r(4,2), q12=r(3,2); this.rawAns = p12 + q12; q = `x^{${p12}} \\cdot x^{${q12}} = x^k. \\text{ Find } k`; break;
+                    case 13: unit = "Polynomial Operations"; let a13=r(5), b13=r(5); this.rawAns = a13 * b13; q = `\\text{Multiply coefficient: } (${a13}x)(${b13}x^2)`; break;
+                    case 14: unit = "Factoring (GCF)"; let gcf=r(6,2), k14=r(4,1); this.rawAns = gcf; q = `\\text{Find GCF of } ${gcf*k14}x^2 \\text{ and } ${gcf*(k14+1)}x`; break;
+                    case 15: unit = "Factoring Trinomials"; let r1=r(5,1), r2=r(5,1); this.rawAns = r1+r2; q = `x^2 + b x + ${r1*r2} = (x+${r1})(x+${r2}). \\text{ Find } b`; break;
+                    case 16: unit = "Graphing Quadratic Functions"; let h16=r(5,-5), k16=r(10,1); this.rawAns = k16; q = `y = (x - ${h16})^2 + ${k16}. \\text{ Vertex y-value?}`; break;
+                    case 17: unit = "Solving Quad (Square Roots)"; let ans17=r(8,2); this.rawAns = ans17; q = `x^2 - ${ans17*ans17} = 0. \\text{ Positive root?}`; break;
+                    case 18: unit = "Quadratic Formula"; let a18=1, b18=r(6,2)*2; let c18=r(5,1); this.rawAns = b18*b18 - 4*a18*c18; q = `x^2 + ${b18}x + ${c18} = 0. \\text{ Find discriminant } b^2-4ac`; break;
+                    case 19: unit = "Radical Expressions"; let base19=r(7,2); this.rawAns = base19; q = `\\text{Simplify } \\sqrt{${base19*base19}}`; break;
+                    case 20: unit = "One & Two-Variable Statistics"; let s1=r(10), s2=r(10), s3=r(10); this.rawAns = (s1+s2+s3); q = `\\text{Sum of data set } \\{${s1}, ${s2}, ${s3}\\}`; break;
+                }
+            } 
+            else if (this.sub === "Geometry") {
+                const uIdx = r(20);
+                switch(uIdx) {
+                    case 1: unit = "Tools of Geometry"; let p1=r(12,2), p2=r(20,13); this.rawAns = p2 - p1; q = `\\text{Distance between segment points } ${p1} \\text{ and } ${p2}`; break;
+                    case 2: unit = "Angles & Bisectors"; let ang=r(70,20)*2; this.rawAns = ang / 2; q = `\\text{An angle bisector cuts } ${ang}^{\\circ} \\text{ in half. Angle measure?}`; break;
+                    case 3: unit = "Logic & Conditional"; let p3=r(5,1); this.rawAns = p3; q = `\\text{If } 2x = ${2*p3}, \\text{ then } x = ?`; break;
+                    case 4: unit = "Rigid Transformations"; let x4=r(5), dx=r(4,1); this.rawAns = x4 + dx; q = `\\text{Translate point } (${x4}, 2) \\text{ right by } ${dx}. \\text{ New x-coord?}`; break;
+                    case 5: unit = "Triangle Angles"; let a5=r(60,30), b5=r(60,30); this.rawAns = 180 - (a5 + b5); q = `\\text{Triangle angles: } ${a5}^{\\circ}, ${b5}^{\\circ}, x^{\\circ}. \\text{ Find } x`; break;
+                    case 6: unit = "Triangle Congruence"; this.rawAns = 3; q = `\\text{How many sides needed for SSS Congruence?}`; break;
+                    case 7: unit = "Proofs with Congruent Triangles"; let side7=r(12,4); this.rawAns = side7; q = `\\triangle ABC \\cong \\triangle DEF. \\text{ If } AB=${side7}, \\text{ find } DE`; break;
+                    case 8: unit = "Relationships in Triangles"; let mid=r(15,4); this.rawAns = mid * 2; q = `\\text{Midsegment = } ${mid}. \\text{ Find parallel base length}`; break;
+                    case 9: unit = "Polygons & Quadrilaterals"; let n9=r(6,4); this.rawAns = (n9-2)*180; q = `\\text{Sum of interior angles of a } ${n9}\\text{-gon?}`; break;
+                    case 10: unit = "Similarity & Proportions"; let scale=r(4,2), len=r(6,2); this.rawAns = len * scale; q = `\\text{Scale factor = } ${scale}. \\text{ Preimage } = ${len}. \\text{ Image length?}`; break;
+                    case 11: unit = "Proving Triangles Similar"; this.rawAns = 2; q = `\\text{Min equal angles needed for AA Similarity?}`; break;
+                    case 12: unit = "Pythagorean Theorem"; let a12=3*r(3,1), b12=4*r(3,1); this.rawAns = Math.round(Math.sqrt(a12*a12 + b12*b12)); q = `a=${a12}, b=${b12}. \\text{ Find hypotenuse } c`; break;
+                    case 13: unit = "Special Right Triangles"; let s13=r(10,2); this.rawAns = s13; q = `45^{\\circ}-45^{\\circ}-90^{\\circ} \\text{ triangle with hypotenuse } ${s13}\\sqrt{2}. \\text{ Leg length?}`; break;
+                    case 14: unit = "Trigonometric Ratios"; let opp=3, hyp=5; this.rawAns = 3; q = `\\text{In 3-4-5 right triangle, } \\sin(\\theta) = \\frac{\\text{opp}}{5}. \\text{ Find opp}`; break;
+                    case 15: unit = "Circles & Angles"; let arc=r(100,20)*2; this.rawAns = arc / 2; q = `\\text{Inscribed angle subtending an arc of } ${arc}^{\\circ}?`; break;
+                    case 16: unit = "Tangents & Secants"; let r16=r(10,3); this.rawAns = 90; q = `\\text{Angle between radius and tangent line at point of contact (deg)?}`; break;
+                    case 17: unit = "Circle Equations"; let h17=r(5,1), k17=r(5,1), rad=r(6,2); this.rawAns = rad*rad; q = `(x-${h17})^2 + (y-${k17})^2 = r^2. \\text{ If } r=${rad}, \\text{ find } r^2`; break;
+                    case 18: unit = "Area of Polygons & Circles"; let r18=r(7,2); this.rawAns = r18*r18; q = `\\text{Area of circle = } k\\pi. \\text{ If radius } r=${r18}, \\text{ find } k`; break;
+                    case 19: unit = "3D Surface Area"; let s19=r(5,2); this.rawAns = 6 * s19 * s19; q = `\\text{Surface area of cube with side } s=${s19}`; break;
+                    case 20: unit = "Volume Formulas"; let l20=r(4,2), w20=r(3,2), h20=r(5,2); this.rawAns = l20*w20*h20; q = `\\text{Volume of rectangular prism } ${l20} \\times ${w20} \\times ${h20}`; break;
+                }
+            }
+            else if (this.sub === "Algebra 2") {
+                const uIdx = r(20);
+                switch(uIdx) {
+                    case 1: unit = "Absolute Value Equations"; let v1=r(10,2); this.rawAns = v1; q = `|x| = ${v1}. \\text{ Positive solution?}`; break;
+                    case 2: unit = "Linear Relations & Functions"; let m2=r(5,2), x22=r(4); this.rawAns = m2*x22; q = `f(x) = ${m2}x. \\text{ Find } f(${x22})`; break;
+                    case 3: unit = "3-Variable Linear Systems"; let z3=r(5,1); this.rawAns = z3; q = `\\begin{cases} x=1 \\\\ y=2 \\\\ x+y+z=${3+z3} \\end{cases}. \\text{ Find } z`; break;
+                    case 4: unit = "Matrices & Multiplication"; let det4_a=r(4,2), det4_b=r(4,2); this.rawAns = det4_a * det4_b; q = `\\text{Scalar product } ${det4_a} \\cdot [${det4_b}]`; break;
+                    case 5: unit = "Determinants"; let a5=r(5,2), d5=r(5,2), b5=r(3,1), c5=r(3,1); this.rawAns = a5*d5 - b5*c5; q = `\\begin{vmatrix} ${a5} & ${b5} \\\\ ${c5} & ${d5} \\end{vmatrix}`; break;
+                    case 6: unit = "Complex Numbers"; let i1=r(5,1), i2=r(5,1); this.rawAns = i1 + i2; q = `(${i1}i) + (${i2}i) = k i. \\text{ Find } k`; break;
+                    case 7: unit = "Polynomial Functions"; let deg7=r(5,3); this.rawAns = deg7; q = `\\text{Degree of } P(x) = 4x^{${deg7}} - 2x + 1`; break;
+                    case 8: unit = "Synthetic Division"; let r8=r(4,1); this.rawAns = 0; q = `\\text{Remainder when } x^2 - ${r8*r8} \\text{ is divided by } (x - ${r8})`; break;
+                    case 9: unit = "Rational Exponents"; let b9=r(4,2); this.rawAns = b9; q = `(${b9*b9})^{1/2}`; break;
+                    case 10: unit = "Exponential Functions"; let b10=r(3,2), x10=r(3,2); this.rawAns = Math.pow(b10, x10); q = `f(x) = ${b10}^x. \\text{ Find } f(${x10})`; break;
+                    case 11: unit = "Logarithmic Functions"; let b11=r(5,2), p11=r(3,2); this.rawAns = p11; q = `\\log_{${b11}}(${Math.pow(b11, p11)})`; break;
+                    case 12: unit = "Logarithmic Equations"; let x12=r(10,2); this.rawAns = x12; q = `\\log_{10}(x) = 1. \\text{ If } \\log_{10}(x)=1, x=?`; break;
+                    case 13: unit = "Rational Expressions"; let num13=r(12,4); this.rawAns = num13 / 2; q = `\\text{Simplify } \\frac{${num13}x}{2x}`; break;
+                    case 14: unit = "Solving Rational Equations"; let x14=r(6,2); this.rawAns = x14; q = `\\frac{10}{x} = \\frac{10}{${x14}}. \\text{ Solve } x`; break;
+                    case 15: unit = "Conic Sections"; let rad15=r(6,2); this.rawAns = rad15; q = `x^2 + y^2 = ${rad15*rad15}. \\text{ Radius of circle?}`; break;
+                    case 16: unit = "Sequences & Series"; let a16=r(5,1), d16=r(4,2); this.rawAns = a16 + 3*d16; q = `a_n = ${a16} + (n-1)${d16}. \\text{ Find 4th term } a_4`; break;
+                    case 17: unit = "Permutations & Combinations"; let n17=r(5,3); this.rawAns = n17; q = `\\text{How many ways to pick 1 item out of } ${n17}?`; break;
+                    case 18: unit = "Statistics & Normal Dist."; this.rawAns = 50; q = `\\text{Percentile of the mean in a normal distribution?}`; break;
+                    case 19: unit = "Unit Circle Trigonometry"; this.rawAns = 1; q = `\\sin(90^{\\circ})`; break;
+                    case 20: unit = "Graphing Sine & Cosine"; let amp=r(5,2); this.rawAns = amp; q = `y = ${amp} \\sin(x). \\text{ Find amplitude}`; break;
+                }
+            }
+            else if (this.sub === "College Algebra") {
+                let type = r(2);
+                if (type === 1) {
+                    unit = "Discriminant Analysis";
+                    let b = r(10, 6); let a = 1; let c = r(5); 
+                    this.rawAns = b*b - 4*a*c;
+                    q = `x^2 + ${b}x + ${c} = 0. \\text{ Find discriminant}`;
+                } else {
+                    unit = "Hard Composites";
+                    let a = r(3, 2); let b = r(4); let input = r(3); 
+                    this.rawAns = Math.pow(a*input + b, 2);
+                    q = `f(x)=x^2, g(x)=${a}x+${b}. \\text{ Find } f(g(${input}))`;
+                }
+            }
+            else if (this.sub === "Quantitative Reasoning") {
+                let type = r(2);
+                if (type === 1) {
+                    unit = "Percents & Prices";
+                    let base = r(10, 2) * 10;
+                    let perc = r(5, 1) * 10;
+                    this.rawAns = base - (base * (perc/100));
+                    q = `\\text{Item: } \\$${base}. \\text{ Discount: } ${perc}\\%. \\text{ New price?}`;
+                } else {
+                    unit = "Simple Interest";
+                    let p = r(20, 5) * 100;
+                    let t = r(4, 2);
+                    let i = p * 0.05 * t;
+                    this.rawAns = p + i;
+                    q = `\\$${p} \\text{ at } 5\\% \\text{ interest for } ${t} \\text{ years. Total?}`;
+                }
+            }
+
+            document.getElementById('unit-badge').innerText = unit;
+            const box = document.getElementById('math-display');
+            if (window.katex) {
+                katex.render(q, box, { throwOnError: false });
+            } else {
+                box.innerText = q;
+            }
+            document.getElementById('math-input').value = ""; 
+            document.getElementById('math-input').focus();
+        },
+        check: function() {
+            const val = document.getElementById('math-input').value.trim();
+            const n = document.getElementById('notif');
+            
+            if (val !== "" && parseInt(val, 10) === parseInt(this.rawAns, 10)) {
+                state.xp += 25; 
+                state.streak++; 
+                state.mastery[this.sub] = (state.mastery[this.sub] || 0) + 20;
+                n.innerText = "CORRECT"; 
+                n.style.background = "var(--green)";
+
+                while (state.xp >= getReq(state.lvl)) { 
+                    state.xp -= getReq(state.lvl); 
+                    state.lvl++; 
+                }
+            } else {
+                state.streak = 0; 
+                n.innerText = `WRONG: ${this.rawAns}`; 
+                n.style.background = "var(--red)";
+            }
+            
+            n.classList.add('pop');
+            document.getElementById('ui-ss').innerText = state.mastery[this.sub];
+            
+            setTimeout(() => { 
+                n.classList.remove('pop'); 
+                Session.sync(); 
+                this.gen(); 
+            }, 600);
+        }
+    };
+
+    document.getElementById('math-input').addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') Engine.check(); 
+    });
+    
+    // Run Session initialization on load
+    Session.init();
+</script>
+</body>
+</html>
